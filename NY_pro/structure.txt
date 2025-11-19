@@ -1,0 +1,1266 @@
+卷 files 的文件夹 PATH 列表
+卷序列号为 D098-D48B
+G:.
+│  .qmake.stash
+│  customcameracontroller.cpp
+│  customcameracontroller.h
+│  database.cpp
+│  database.h
+│  FFmpegPlayer.cpp
+│  ffmpegplayer.h
+│  ipconnect.cpp
+│  ipconnect.h
+│  ipconnect.ui
+│  logmanager.cpp
+│  logmanager.h
+│  main.cpp
+│  Makefile
+│  Makefile.Debug
+│  Makefile.Release
+│  mapinteractiveview.cpp
+│  mapinteractiveview.h
+│  MySQLHandler.cpp
+│  MySQLHandler.h
+│  NY_pro.pro
+│  NY_pro.pro.user
+│  NY_pro.pro.user.3127283
+│  overlaywidget.cpp
+│  overlaywidget.h
+│  pointcloudmaterial.cpp
+│  pointcloudmaterial.h
+│  pointcloudrenderer.cpp
+│  pointcloudrenderer.h
+│  pointcloudviewwidget.cpp
+│  pointcloudviewwidget.h
+│  readme.md
+│  reporttablemodel.cpp
+│  reporttablemodel.h
+│  res.qrc
+│  robot.cpp
+│  robot.h
+│  robot.ui
+│  ROS控制使用说明.md
+│  signup.cpp
+│  signup.h
+│  signup.ui
+│  structure.txt
+│  tcpclient.cpp
+│  tcpclient.h
+│  ui_ipconnect.h
+│  ui_robot.h
+│  ui_signup.h
+│  video.mp4
+│  video1.mp4
+│  video2.mp4
+│  video3.mp4
+│  video4.mp4
+│  videomanager.cpp
+│  videomanager.h
+│  videowallwidget.cpp
+│  videowallwidget.h
+│  videowidget.h
+│  巡检结果示意表格.xlsx
+│  
+├─3rdparty
+│  │  502.pcd
+│  │  map.pcd
+│  │  path2.csv
+│  │  path_info.json
+│  │  数据库.zip
+│  │  通讯.zip
+│  │  项目工作备忘录.pdf
+│  │  
+│  ├─ffmpeg
+│  │  │  avcodec-61.dll
+│  │  │  avdevice-61.dll
+│  │  │  avfilter-10.dll
+│  │  │  avformat-61.dll
+│  │  │  avutil-59.dll
+│  │  │  postproc-58.dll
+│  │  │  swresample-5.dll
+│  │  │  swscale-8.dll
+│  │  │  
+│  │  ├─include
+│  │  │  ├─libavcodec
+│  │  │  │      ac3_parser.h
+│  │  │  │      adts_parser.h
+│  │  │  │      avcodec.h
+│  │  │  │      avdct.h
+│  │  │  │      avfft.h
+│  │  │  │      bsf.h
+│  │  │  │      codec.h
+│  │  │  │      codec_desc.h
+│  │  │  │      codec_id.h
+│  │  │  │      codec_par.h
+│  │  │  │      d3d11va.h
+│  │  │  │      defs.h
+│  │  │  │      dirac.h
+│  │  │  │      dv_profile.h
+│  │  │  │      dxva2.h
+│  │  │  │      jni.h
+│  │  │  │      mediacodec.h
+│  │  │  │      packet.h
+│  │  │  │      qsv.h
+│  │  │  │      vdpau.h
+│  │  │  │      version.h
+│  │  │  │      version_major.h
+│  │  │  │      videotoolbox.h
+│  │  │  │      vorbis_parser.h
+│  │  │  │      
+│  │  │  ├─libavdevice
+│  │  │  │      avdevice.h
+│  │  │  │      version.h
+│  │  │  │      version_major.h
+│  │  │  │      
+│  │  │  ├─libavfilter
+│  │  │  │      avfilter.h
+│  │  │  │      buffersink.h
+│  │  │  │      buffersrc.h
+│  │  │  │      version.h
+│  │  │  │      version_major.h
+│  │  │  │      
+│  │  │  ├─libavformat
+│  │  │  │      avformat.h
+│  │  │  │      avio.h
+│  │  │  │      version.h
+│  │  │  │      version_major.h
+│  │  │  │      
+│  │  │  ├─libavutil
+│  │  │  │      adler32.h
+│  │  │  │      aes.h
+│  │  │  │      aes_ctr.h
+│  │  │  │      ambient_viewing_environment.h
+│  │  │  │      attributes.h
+│  │  │  │      audio_fifo.h
+│  │  │  │      avassert.h
+│  │  │  │      avconfig.h
+│  │  │  │      avstring.h
+│  │  │  │      avutil.h
+│  │  │  │      base64.h
+│  │  │  │      blowfish.h
+│  │  │  │      bprint.h
+│  │  │  │      bswap.h
+│  │  │  │      buffer.h
+│  │  │  │      camellia.h
+│  │  │  │      cast5.h
+│  │  │  │      channel_layout.h
+│  │  │  │      common.h
+│  │  │  │      cpu.h
+│  │  │  │      crc.h
+│  │  │  │      csp.h
+│  │  │  │      des.h
+│  │  │  │      detection_bbox.h
+│  │  │  │      dict.h
+│  │  │  │      display.h
+│  │  │  │      dovi_meta.h
+│  │  │  │      downmix_info.h
+│  │  │  │      encryption_info.h
+│  │  │  │      error.h
+│  │  │  │      eval.h
+│  │  │  │      executor.h
+│  │  │  │      ffversion.h
+│  │  │  │      fifo.h
+│  │  │  │      file.h
+│  │  │  │      film_grain_params.h
+│  │  │  │      frame.h
+│  │  │  │      hash.h
+│  │  │  │      hdr_dynamic_metadata.h
+│  │  │  │      hdr_dynamic_vivid_metadata.h
+│  │  │  │      hmac.h
+│  │  │  │      hwcontext.h
+│  │  │  │      hwcontext_cuda.h
+│  │  │  │      hwcontext_d3d11va.h
+│  │  │  │      hwcontext_d3d12va.h
+│  │  │  │      hwcontext_drm.h
+│  │  │  │      hwcontext_dxva2.h
+│  │  │  │      hwcontext_mediacodec.h
+│  │  │  │      hwcontext_opencl.h
+│  │  │  │      hwcontext_qsv.h
+│  │  │  │      hwcontext_vaapi.h
+│  │  │  │      hwcontext_vdpau.h
+│  │  │  │      hwcontext_videotoolbox.h
+│  │  │  │      hwcontext_vulkan.h
+│  │  │  │      iamf.h
+│  │  │  │      imgutils.h
+│  │  │  │      intfloat.h
+│  │  │  │      intreadwrite.h
+│  │  │  │      lfg.h
+│  │  │  │      log.h
+│  │  │  │      lzo.h
+│  │  │  │      macros.h
+│  │  │  │      mastering_display_metadata.h
+│  │  │  │      mathematics.h
+│  │  │  │      md5.h
+│  │  │  │      mem.h
+│  │  │  │      motion_vector.h
+│  │  │  │      murmur3.h
+│  │  │  │      opt.h
+│  │  │  │      parseutils.h
+│  │  │  │      pixdesc.h
+│  │  │  │      pixelutils.h
+│  │  │  │      pixfmt.h
+│  │  │  │      random_seed.h
+│  │  │  │      rational.h
+│  │  │  │      rc4.h
+│  │  │  │      replaygain.h
+│  │  │  │      ripemd.h
+│  │  │  │      samplefmt.h
+│  │  │  │      sha.h
+│  │  │  │      sha512.h
+│  │  │  │      spherical.h
+│  │  │  │      stereo3d.h
+│  │  │  │      tea.h
+│  │  │  │      threadmessage.h
+│  │  │  │      time.h
+│  │  │  │      timecode.h
+│  │  │  │      timestamp.h
+│  │  │  │      tree.h
+│  │  │  │      twofish.h
+│  │  │  │      tx.h
+│  │  │  │      uuid.h
+│  │  │  │      version.h
+│  │  │  │      video_enc_params.h
+│  │  │  │      video_hint.h
+│  │  │  │      xtea.h
+│  │  │  │      
+│  │  │  ├─libpostproc
+│  │  │  │      postprocess.h
+│  │  │  │      version.h
+│  │  │  │      version_major.h
+│  │  │  │      
+│  │  │  ├─libswresample
+│  │  │  │      swresample.h
+│  │  │  │      version.h
+│  │  │  │      version_major.h
+│  │  │  │      
+│  │  │  └─libswscale
+│  │  │          swscale.h
+│  │  │          version.h
+│  │  │          version_major.h
+│  │  │          
+│  │  └─lib
+│  │          avcodec-61.def
+│  │          avcodec.lib
+│  │          avdevice-61.def
+│  │          avdevice.lib
+│  │          avfilter-10.def
+│  │          avfilter.lib
+│  │          avformat-61.def
+│  │          avformat.lib
+│  │          avutil-59.def
+│  │          avutil.lib
+│  │          libavcodec.dll.a
+│  │          libavdevice.dll.a
+│  │          libavfilter.dll.a
+│  │          libavformat.dll.a
+│  │          libavutil.dll.a
+│  │          libpostproc.dll.a
+│  │          libswresample.dll.a
+│  │          libswscale.dll.a
+│  │          postproc-58.def
+│  │          postproc.lib
+│  │          swresample-5.def
+│  │          swresample.lib
+│  │          swscale-8.def
+│  │          swscale.lib
+│  │          
+│  ├─mysql
+│  │      libmysql.dll
+│  │      libmysql.lib
+│  │      MySQLHandler.cpp
+│  │      MySQLHandler.h
+│  │      qsqlmysql.dll
+│  │      qsqlmysqld.dll
+│  │      readme.md
+│  │      
+│  ├─sqldrivers
+│  │  │  qsqlite.dll
+│  │  │  qsqlmysql.dll
+│  │  │  qsqlodbc.dll
+│  │  │  qsqlpsql.dll
+│  │  │  
+│  │  └─include
+│  │      │  errmsg.h
+│  │      │  field_types.h
+│  │      │  mysql.h
+│  │      │  mysqld_error.h
+│  │      │  mysqlx_ername.h
+│  │      │  mysqlx_error.h
+│  │      │  mysqlx_version.h
+│  │      │  mysql_com.h
+│  │      │  mysql_time.h
+│  │      │  mysql_version.h
+│  │      │  my_command.h
+│  │      │  my_compress.h
+│  │      │  my_list.h
+│  │      │  
+│  │      ├─mysql
+│  │      │      client_plugin.h
+│  │      │      plugin_auth_common.h
+│  │      │      udf_registration_types.h
+│  │      │      
+│  │      └─openssl
+│  │              applink.c
+│  │              
+│  └─通讯
+│      └─通讯
+│              learn.md
+│              patrol_config_node.py
+│              windows_client.py
+│              
+├─debug
+├─image
+│  │  map.jpg
+│  │  video.mp4
+│  │  video1.mp4
+│  │  video2.mp4
+│  │  video3.mp4
+│  │  video4.mp4
+│  │  
+│  ├─back_ground_subtraction_func
+│  │      0.jpg
+│  │      120.jpg
+│  │      180.jpg
+│  │      240.jpg
+│  │      60.jpg
+│  │      video1.mp4
+│  │      
+│  ├─optical_flow_method
+│  │      0.jpg
+│  │      120.jpg
+│  │      180.jpg
+│  │      240.jpg
+│  │      60.jpg
+│  │      video2.mp4
+│  │      
+│  ├─plume_enhancement
+│  │      0.jpg
+│  │      120.jpg
+│  │      180.jpg
+│  │      240.jpg
+│  │      60.jpg
+│  │      video3.mp4
+│  │      
+│  └─preprocessing
+│          0.jpg
+│          120.jpg
+│          180.jpg
+│          240.jpg
+│          60.jpg
+│          video4.mp4
+│          
+├─QtXlsxWriter-master
+│  │  .gitignore
+│  │  .qmake.conf
+│  │  LICENSE
+│  │  qtxlsx.pro
+│  │  README.md
+│  │  sync.profile
+│  │  _clang-format
+│  │  
+│  ├─examples
+│  │  │  examples.pro
+│  │  │  
+│  │  └─xlsx
+│  │      │  xlsx.pro
+│  │      │  
+│  │      ├─calendar
+│  │      │      calendar.pro
+│  │      │      main.cpp
+│  │      │      
+│  │      ├─chart
+│  │      │      chart.pro
+│  │      │      main.cpp
+│  │      │      
+│  │      ├─chartsheet
+│  │      │      chartsheet.pro
+│  │      │      main.cpp
+│  │      │      
+│  │      ├─conditionalformatting
+│  │      │  │  conditionalformatting.pro
+│  │      │  │  main.cpp
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      └─src
+│  │      │              conditionalformatting.qdoc
+│  │      │              
+│  │      ├─datavalidation
+│  │      │      datavalidation.pro
+│  │      │      main.cpp
+│  │      │      
+│  │      ├─definename
+│  │      │      definename.pro
+│  │      │      main.cpp
+│  │      │      
+│  │      ├─demo
+│  │      │  │  demo.pro
+│  │      │  │  main.cpp
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      ├─images
+│  │      │      │      xlsx_demo.gif
+│  │      │      │      
+│  │      │      └─src
+│  │      │              demo.qdoc
+│  │      │              
+│  │      ├─documentproperty
+│  │      │  │  documentproperty.pro
+│  │      │  │  main.cpp
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      ├─images
+│  │      │      │      doc_property.png
+│  │      │      │      
+│  │      │      └─src
+│  │      │              documentproperty.qdoc
+│  │      │              
+│  │      ├─extractdata
+│  │      │  │  extractdata.pro
+│  │      │  │  main.cpp
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      └─src
+│  │      │              extractdata.qdoc
+│  │      │              
+│  │      ├─formulas
+│  │      │  │  formulas.pro
+│  │      │  │  main.cpp
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      └─src
+│  │      │              formulas.qdoc
+│  │      │              
+│  │      ├─hello
+│  │      │  │  hello.pro
+│  │      │  │  main.cpp
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      ├─images
+│  │      │      │      hello.png
+│  │      │      │      
+│  │      │      └─src
+│  │      │              hello.qdoc
+│  │      │              
+│  │      ├─hyperlinks
+│  │      │      hyperlinks.pro
+│  │      │      main.cpp
+│  │      │      
+│  │      ├─image
+│  │      │      image.pro
+│  │      │      main.cpp
+│  │      │      
+│  │      ├─mergecells
+│  │      │  │  main.cpp
+│  │      │  │  mergecells.pro
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      ├─images
+│  │      │      │      xlsx-mergecells.png
+│  │      │      │      
+│  │      │      └─src
+│  │      │              mergecells.qdoc
+│  │      │              
+│  │      ├─numberformat
+│  │      │      main.cpp
+│  │      │      numberformat.pro
+│  │      │      
+│  │      ├─richtext
+│  │      │  │  main.cpp
+│  │      │  │  richtext.pro
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      ├─images
+│  │      │      │      richtext.png
+│  │      │      │      
+│  │      │      └─src
+│  │      │              richtext.qdoc
+│  │      │              
+│  │      ├─rowcolumn
+│  │      │      main.cpp
+│  │      │      rowcolumn.pro
+│  │      │      
+│  │      ├─style
+│  │      │  │  main.cpp
+│  │      │  │  style.pro
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      └─src
+│  │      │              style.qdoc
+│  │      │              
+│  │      ├─worksheetoperations
+│  │      │  │  main.cpp
+│  │      │  │  worksheetoperations.pro
+│  │      │  │  
+│  │      │  └─doc
+│  │      │      └─src
+│  │      │              worksheetoperations.qdoc
+│  │      │              
+│  │      └─xlsxwidget
+│  │              main.cpp
+│  │              xlsxsheetmodel.cpp
+│  │              xlsxsheetmodel.h
+│  │              xlsxsheetmodel_p.h
+│  │              xlsxwidget.pro
+│  │              
+│  ├─src
+│  │  │  src.pro
+│  │  │  
+│  │  └─xlsx
+│  │      │  qtxlsx.pri
+│  │      │  xlsx.pro
+│  │      │  xlsxabstractooxmlfile.cpp
+│  │      │  xlsxabstractooxmlfile.h
+│  │      │  xlsxabstractooxmlfile_p.h
+│  │      │  xlsxabstractsheet.cpp
+│  │      │  xlsxabstractsheet.h
+│  │      │  xlsxabstractsheet_p.h
+│  │      │  xlsxcell.cpp
+│  │      │  xlsxcell.h
+│  │      │  xlsxcellformula.cpp
+│  │      │  xlsxcellformula.h
+│  │      │  xlsxcellformula_p.h
+│  │      │  xlsxcellrange.cpp
+│  │      │  xlsxcellrange.h
+│  │      │  xlsxcellreference.cpp
+│  │      │  xlsxcellreference.h
+│  │      │  xlsxcell_p.h
+│  │      │  xlsxchart.cpp
+│  │      │  xlsxchart.h
+│  │      │  xlsxchartsheet.cpp
+│  │      │  xlsxchartsheet.h
+│  │      │  xlsxchartsheet_p.h
+│  │      │  xlsxchart_p.h
+│  │      │  xlsxcolor.cpp
+│  │      │  xlsxcolor_p.h
+│  │      │  xlsxconditionalformatting.cpp
+│  │      │  xlsxconditionalformatting.h
+│  │      │  xlsxconditionalformatting_p.h
+│  │      │  xlsxcontenttypes.cpp
+│  │      │  xlsxcontenttypes_p.h
+│  │      │  xlsxdatavalidation.cpp
+│  │      │  xlsxdatavalidation.h
+│  │      │  xlsxdatavalidation_p.h
+│  │      │  xlsxdocpropsapp.cpp
+│  │      │  xlsxdocpropsapp_p.h
+│  │      │  xlsxdocpropscore.cpp
+│  │      │  xlsxdocpropscore_p.h
+│  │      │  xlsxdocument.cpp
+│  │      │  xlsxdocument.h
+│  │      │  xlsxdocument_p.h
+│  │      │  xlsxdrawing.cpp
+│  │      │  xlsxdrawinganchor.cpp
+│  │      │  xlsxdrawinganchor_p.h
+│  │      │  xlsxdrawing_p.h
+│  │      │  xlsxformat.cpp
+│  │      │  xlsxformat.h
+│  │      │  xlsxformat_p.h
+│  │      │  xlsxglobal.h
+│  │      │  xlsxmediafile.cpp
+│  │      │  xlsxmediafile_p.h
+│  │      │  xlsxnumformatparser.cpp
+│  │      │  xlsxnumformatparser_p.h
+│  │      │  xlsxrelationships.cpp
+│  │      │  xlsxrelationships_p.h
+│  │      │  xlsxrichstring.cpp
+│  │      │  xlsxrichstring.h
+│  │      │  xlsxrichstring_p.h
+│  │      │  xlsxsharedstrings.cpp
+│  │      │  xlsxsharedstrings_p.h
+│  │      │  xlsxsimpleooxmlfile.cpp
+│  │      │  xlsxsimpleooxmlfile_p.h
+│  │      │  xlsxstyles.cpp
+│  │      │  xlsxstyles_p.h
+│  │      │  xlsxtheme.cpp
+│  │      │  xlsxtheme_p.h
+│  │      │  xlsxutility.cpp
+│  │      │  xlsxutility_p.h
+│  │      │  xlsxworkbook.cpp
+│  │      │  xlsxworkbook.h
+│  │      │  xlsxworkbook_p.h
+│  │      │  xlsxworksheet.cpp
+│  │      │  xlsxworksheet.h
+│  │      │  xlsxworksheet_p.h
+│  │      │  xlsxzipreader.cpp
+│  │      │  xlsxzipreader_p.h
+│  │      │  xlsxzipwriter.cpp
+│  │      │  xlsxzipwriter_p.h
+│  │      │  
+│  │      └─doc
+│  │          │  qtxlsx.qdocconf
+│  │          │  
+│  │          ├─snippets
+│  │          │      doc_src_qtxlsx.cpp
+│  │          │      doc_src_qtxlsx.pro
+│  │          │      
+│  │          └─src
+│  │                  examples.qdoc
+│  │                  qtxlsx-index.qdoc
+│  │                  qtxlsx.qdoc
+│  │                  usage.qdoc
+│  │                  
+│  └─tests
+│      │  tests.pro
+│      │  
+│      ├─auto
+│      │  │  auto.pro
+│      │  │  
+│      │  ├─cellreference
+│      │  │      cellreference.pro
+│      │  │      tst_cellreferencetest.cpp
+│      │  │      
+│      │  ├─cmake
+│      │  │      cmake.pro
+│      │  │      CMakeLists.txt
+│      │  │      
+│      │  ├─document
+│      │  │      document.pro
+│      │  │      tst_documenttest.cpp
+│      │  │      
+│      │  ├─format
+│      │  │      format.pro
+│      │  │      tst_formattest.cpp
+│      │  │      
+│      │  ├─propsapp
+│      │  │      propsapp.pro
+│      │  │      tst_docpropsapptest.cpp
+│      │  │      
+│      │  ├─propscore
+│      │  │      propscore.pro
+│      │  │      tst_propscoretest.cpp
+│      │  │      
+│      │  ├─relationships
+│      │  │      relationships.pro
+│      │  │      tst_relationshipstest.cpp
+│      │  │      
+│      │  ├─richstring
+│      │  │      richstring.pro
+│      │  │      tst_richstringtest.cpp
+│      │  │      
+│      │  ├─sharedstrings
+│      │  │      sharedstrings.pro
+│      │  │      tst_sharedstringstest.cpp
+│      │  │      
+│      │  ├─styles
+│      │  │      styles.pro
+│      │  │      tst_stylestest.cpp
+│      │  │      
+│      │  ├─utility
+│      │  │      tst_utilitytest.cpp
+│      │  │      utility.pro
+│      │  │      
+│      │  ├─worksheet
+│      │  │      tst_worksheet.cpp
+│      │  │      worksheet.pro
+│      │  │      
+│      │  ├─xlsxconditionalformatting
+│      │  │      tst_conditionalformattingtest.cpp
+│      │  │      xlsxconditionalformatting.pro
+│      │  │      
+│      │  └─zipreader
+│      │          tst_zipreadertest.cpp
+│      │          zipreader.pro
+│      │          
+│      └─benchmarks
+│          │  benchmarks.pro
+│          │  
+│          └─xmlspace
+│                  tst_xmlspacetest.cpp
+│                  xmlspace.pro
+│                  
+├─release
+│  │  1.json
+│  │  11.json
+│  │  13.json
+│  │  2.json
+│  │  4.json
+│  │  avcodec-61.dll
+│  │  avdevice-61.dll
+│  │  avfilter-10.dll
+│  │  avformat-61.dll
+│  │  avutil-59.dll
+│  │  customcameracontroller.obj
+│  │  d3dcompiler_47.dll
+│  │  database.obj
+│  │  ffmpegplayer.obj
+│  │  ipconnect.obj
+│  │  libEGL.dll
+│  │  libGLESv2.dll
+│  │  libmysql.dll
+│  │  libmysql.lib
+│  │  main.obj
+│  │  mapinteractiveview.obj
+│  │  moc_customcameracontroller.cpp
+│  │  moc_customcameracontroller.obj
+│  │  moc_database.cpp
+│  │  moc_database.obj
+│  │  moc_ffmpegplayer.cpp
+│  │  moc_ffmpegplayer.obj
+│  │  moc_ipconnect.cpp
+│  │  moc_ipconnect.obj
+│  │  moc_mapinteractiveview.cpp
+│  │  moc_mapinteractiveview.obj
+│  │  moc_overlaywidget.cpp
+│  │  moc_overlaywidget.obj
+│  │  moc_pointcloudmaterial.cpp
+│  │  moc_pointcloudrenderer.cpp
+│  │  moc_pointcloudrenderer.obj
+│  │  moc_pointcloudviewwidget.cpp
+│  │  moc_pointcloudviewwidget.obj
+│  │  moc_predefs.h
+│  │  moc_robot.cpp
+│  │  moc_robot.obj
+│  │  moc_signup.cpp
+│  │  moc_signup.obj
+│  │  moc_videomanager.cpp
+│  │  moc_videomanager.obj
+│  │  moc_videowallwidget.cpp
+│  │  moc_videowallwidget.obj
+│  │  moc_videowidget.cpp
+│  │  moc_videowidget.obj
+│  │  moc_xlsxdocument.cpp
+│  │  moc_xlsxdocument.obj
+│  │  NY_pro.exe
+│  │  opengl32sw.dll
+│  │  overlaywidget.obj
+│  │  pointcloudrenderer.obj
+│  │  pointcloudviewwidget.obj
+│  │  postproc-58.dll
+│  │  qrc_res.cpp
+│  │  qrc_res.obj
+│  │  Qt53DAnimation.dll
+│  │  Qt53DCore.dll
+│  │  Qt53DExtras.dll
+│  │  Qt53DInput.dll
+│  │  Qt53DLogic.dll
+│  │  Qt53DRender.dll
+│  │  Qt5Concurrent.dll
+│  │  Qt5Core.dll
+│  │  Qt5Gamepad.dll
+│  │  Qt5Gui.dll
+│  │  Qt5Multimedia.dll
+│  │  Qt5MultimediaWidgets.dll
+│  │  Qt5Network.dll
+│  │  Qt5OpenGL.dll
+│  │  Qt5Sql.dll
+│  │  Qt5Svg.dll
+│  │  Qt5WebSockets.dll
+│  │  Qt5Widgets.dll
+│  │  readme.md
+│  │  robot.obj
+│  │  signup.obj
+│  │  swresample-5.dll
+│  │  swscale-8.dll
+│  │  vc_redist.x64.exe
+│  │  videomanager.obj
+│  │  videowallwidget.obj
+│  │  xlsxabstractooxmlfile.obj
+│  │  xlsxabstractsheet.obj
+│  │  xlsxcell.obj
+│  │  xlsxcellformula.obj
+│  │  xlsxcellrange.obj
+│  │  xlsxcellreference.obj
+│  │  xlsxchart.obj
+│  │  xlsxchartsheet.obj
+│  │  xlsxcolor.obj
+│  │  xlsxconditionalformatting.obj
+│  │  xlsxcontenttypes.obj
+│  │  xlsxdatavalidation.obj
+│  │  xlsxdocpropsapp.obj
+│  │  xlsxdocpropscore.obj
+│  │  xlsxdocument.obj
+│  │  xlsxdrawing.obj
+│  │  xlsxdrawinganchor.obj
+│  │  xlsxformat.obj
+│  │  xlsxmediafile.obj
+│  │  xlsxnumformatparser.obj
+│  │  xlsxrelationships.obj
+│  │  xlsxrichstring.obj
+│  │  xlsxsharedstrings.obj
+│  │  xlsxsimpleooxmlfile.obj
+│  │  xlsxstyles.obj
+│  │  xlsxtheme.obj
+│  │  xlsxutility.obj
+│  │  xlsxworkbook.obj
+│  │  xlsxworksheet.obj
+│  │  xlsxzipreader.obj
+│  │  xlsxzipwriter.obj
+│  │  
+│  ├─audio
+│  │      qtaudio_wasapi.dll
+│  │      qtaudio_windows.dll
+│  │      
+│  ├─bearer
+│  │      qgenericbearer.dll
+│  │      
+│  ├─gamepads
+│  │      xinputgamepad.dll
+│  │      
+│  ├─geometryloaders
+│  │      defaultgeometryloader.dll
+│  │      gltfgeometryloader.dll
+│  │      
+│  ├─iconengines
+│  │      qsvgicon.dll
+│  │      
+│  ├─imageformats
+│  │      qgif.dll
+│  │      qicns.dll
+│  │      qico.dll
+│  │      qjpeg.dll
+│  │      qsvg.dll
+│  │      qtga.dll
+│  │      qtiff.dll
+│  │      qwbmp.dll
+│  │      qwebp.dll
+│  │      
+│  ├─mediaservice
+│  │      dsengine.dll
+│  │      qtmedia_audioengine.dll
+│  │      wmfengine.dll
+│  │      
+│  ├─path_data
+│  │      path_info.json
+│  │      
+│  ├─platforms
+│  │      qwindows.dll
+│  │      
+│  ├─playlistformats
+│  │      qtmultimedia_m3u.dll
+│  │      
+│  ├─sceneparsers
+│  │      assimpsceneimport.dll
+│  │      gltfsceneexport.dll
+│  │      gltfsceneimport.dll
+│  │      
+│  ├─sqldrivers
+│  │      qsqlite.dll
+│  │      qsqlmysql.dll
+│  │      qsqlmysql.dll.bak
+│  │      qsqlodbc.dll
+│  │      qsqlpsql.dll
+│  │      
+│  └─styles
+│          qwindowsvistastyle.dll
+│          
+├─SDK_NET_Windows_X86_X64
+│  │  Open Source Software Licenses.txt
+│  │  SDK_NET Development Manual_V1.0.11.pdf
+│  │  SDK_NET 开发手册 V1.0.11.pdf
+│  │  
+│  ├─Demo
+│  │  └─C++
+│  │      ├─bin
+│  │      │  └─x64
+│  │      │      │  ability.csv
+│  │      │      │  avcodec-58.dll
+│  │      │      │  avdevice-58.dll
+│  │      │      │  avfilter-7.dll
+│  │      │      │  avformat-58.dll
+│  │      │      │  avutil-56.dll
+│  │      │      │  custom.csv
+│  │      │      │  IRCNetSDK.dll
+│  │      │      │  IRCNetSDK.lib
+│  │      │      │  IRCNETSDK.log
+│  │      │      │  IRCNetSDKDemo.exe
+│  │      │      │  IvsPlaySDK.dll
+│  │      │      │  libcrypto-1_1-x64.dll
+│  │      │      │  libcurl.dll
+│  │      │      │  libssl-1_1-x64.dll
+│  │      │      │  lz4.dll
+│  │      │      │  PocoCrypto64.dll
+│  │      │      │  PocoFoundation64.dll
+│  │      │      │  PocoJSON64.dll
+│  │      │      │  Qt5Core.dll
+│  │      │      │  Qt5Gui.dll
+│  │      │      │  Qt5Network.dll
+│  │      │      │  Qt5Widgets.dll
+│  │      │      │  SDL2.dll
+│  │      │      │  StdPlaySDK.dll
+│  │      │      │  swresample-3.dll
+│  │      │      │  swscale-5.dll
+│  │      │      │  
+│  │      │      ├─imageformats
+│  │      │      │      qgif.dll
+│  │      │      │      qgifd.dll
+│  │      │      │      qicns.dll
+│  │      │      │      qicnsd.dll
+│  │      │      │      qico.dll
+│  │      │      │      qicod.dll
+│  │      │      │      qjpeg.dll
+│  │      │      │      qjpegd.dll
+│  │      │      │      qsvg.dll
+│  │      │      │      qsvgd.dll
+│  │      │      │      qtga.dll
+│  │      │      │      qtgad.dll
+│  │      │      │      qtiff.dll
+│  │      │      │      qtiffd.dll
+│  │      │      │      qwbmp.dll
+│  │      │      │      qwbmpd.dll
+│  │      │      │      qwebp.dll
+│  │      │      │      qwebpd.dll
+│  │      │      │      
+│  │      │      ├─platforms
+│  │      │      │      qdirect2d.dll
+│  │      │      │      qminimal.dll
+│  │      │      │      qoffscreen.dll
+│  │      │      │      qwebgl.dll
+│  │      │      │      qwindows.dll
+│  │      │      │      
+│  │      │      └─styles
+│  │      │              qwindowsvistastyle.dll
+│  │      │              
+│  │      └─src
+│  │          │  AlarmPage.cpp
+│  │          │  AlarmPage.h
+│  │          │  AlarmPage.ui
+│  │          │  ConfigPage.cpp
+│  │          │  ConfigPage.h
+│  │          │  ConfigPage.ui
+│  │          │  ControlPage.cpp
+│  │          │  ControlPage.h
+│  │          │  ControlPage.ui
+│  │          │  demo.qrc
+│  │          │  DownloadPage.cpp
+│  │          │  DownloadPage.h
+│  │          │  DownloadPage.ui
+│  │          │  IRCNetSDKDemo.pro
+│  │          │  IRCNetSDKDemo.sln
+│  │          │  IRCNetSDKDemo.vcxproj
+│  │          │  main.cpp
+│  │          │  MainWindow.cpp
+│  │          │  MainWindow.h
+│  │          │  MainWindow.ui
+│  │          │  MsgBox.cpp
+│  │          │  MsgBox.h
+│  │          │  PeripheralPage.cpp
+│  │          │  PeripheralPage.h
+│  │          │  PeripheralPage.ui
+│  │          │  PreviewPage.cpp
+│  │          │  PreviewPage.h
+│  │          │  PreviewPage.ui
+│  │          │  PTZPage.cpp
+│  │          │  PTZPage.h
+│  │          │  PTZPage.ui
+│  │          │  TempAlarmPage.cpp
+│  │          │  TempAlarmPage.h
+│  │          │  TempAlarmPage.ui
+│  │          │  VideoLabel.cpp
+│  │          │  VideoLabel.h
+│  │          │  
+│  │          └─res
+│  │                  tool_icon_circle_sel.png
+│  │                  tool_icon_line_sel.png
+│  │                  tool_icon_point_sel.png
+│  │                  tool_icon_polygon_sel.png
+│  │                  tool_icon_rectangle_sel.png
+│  │                  tool_icon_shielded_area.png
+│  │                  
+│  └─SDK
+│      ├─include
+│      │      IRCNetSDK.h
+│      │      IRCNetSDKDef.h
+│      │      
+│      ├─x64
+│      │      ability.csv
+│      │      avcodec-58.dll
+│      │      avdevice-58.dll
+│      │      avfilter-7.dll
+│      │      avformat-58.dll
+│      │      avutil-56.dll
+│      │      custom.csv
+│      │      IRCNetSDK.dll
+│      │      IRCNetSDK.lib
+│      │      IvsPlaySDK.dll
+│      │      libcrypto-1_1-x64.dll
+│      │      libcurl.dll
+│      │      libssl-1_1-x64.dll
+│      │      lz4.dll
+│      │      PocoCrypto64.dll
+│      │      PocoFoundation64.dll
+│      │      PocoJSON64.dll
+│      │      SDL2.dll
+│      │      StdPlaySDK.dll
+│      │      swresample-3.dll
+│      │      swscale-5.dll
+│      │      
+│      └─x86
+│              ability.csv
+│              avcodec-58.dll
+│              avdevice-58.dll
+│              avfilter-7.dll
+│              avformat-58.dll
+│              avutil-56.dll
+│              custom.csv
+│              IRCNetSDK.dll
+│              IRCNetSDK.lib
+│              IvsPlaySDK.dll
+│              libcrypto-1_1.dll
+│              libcurl.dll
+│              libssl-1_1.dll
+│              lz4.dll
+│              PocoCrypto.dll
+│              PocoFoundation.dll
+│              PocoJSON.dll
+│              SDL2.dll
+│              StdPlaySDK.dll
+│              swresample-3.dll
+│              swscale-5.dll
+│              
+├─SDK_NET_Windows_X86_X64old
+│  │  Open Source Software Licenses.txt
+│  │  SDK_NET Development Manual_V1.0.11.pdf
+│  │  SDK_NET 开发手册 V1.0.11.pdf
+│  │  
+│  ├─Demo
+│  │  └─C++
+│  │      ├─bin
+│  │      │  └─x64
+│  │      │      │  ability.csv
+│  │      │      │  avcodec-58.dll
+│  │      │      │  avdevice-58.dll
+│  │      │      │  avfilter-7.dll
+│  │      │      │  avformat-58.dll
+│  │      │      │  avutil-56.dll
+│  │      │      │  custom.csv
+│  │      │      │  IRCNetSDK.dll
+│  │      │      │  IRCNetSDKDemo.exe
+│  │      │      │  IvsPlaySDK.dll
+│  │      │      │  libcrypto-1_1-x64.dll
+│  │      │      │  libcurl.dll
+│  │      │      │  libssl-1_1-x64.dll
+│  │      │      │  lz4.dll
+│  │      │      │  PocoCrypto64.dll
+│  │      │      │  PocoFoundation64.dll
+│  │      │      │  PocoJSON64.dll
+│  │      │      │  Qt5Core.dll
+│  │      │      │  Qt5Gui.dll
+│  │      │      │  Qt5Network.dll
+│  │      │      │  Qt5Widgets.dll
+│  │      │      │  SDL2.dll
+│  │      │      │  StdPlaySDK.dll
+│  │      │      │  swresample-3.dll
+│  │      │      │  swscale-5.dll
+│  │      │      │  
+│  │      │      ├─imageformats
+│  │      │      │      qgif.dll
+│  │      │      │      qgifd.dll
+│  │      │      │      qicns.dll
+│  │      │      │      qicnsd.dll
+│  │      │      │      qico.dll
+│  │      │      │      qicod.dll
+│  │      │      │      qjpeg.dll
+│  │      │      │      qjpegd.dll
+│  │      │      │      qsvg.dll
+│  │      │      │      qsvgd.dll
+│  │      │      │      qtga.dll
+│  │      │      │      qtgad.dll
+│  │      │      │      qtiff.dll
+│  │      │      │      qtiffd.dll
+│  │      │      │      qwbmp.dll
+│  │      │      │      qwbmpd.dll
+│  │      │      │      qwebp.dll
+│  │      │      │      qwebpd.dll
+│  │      │      │      
+│  │      │      ├─platforms
+│  │      │      │      qdirect2d.dll
+│  │      │      │      qminimal.dll
+│  │      │      │      qoffscreen.dll
+│  │      │      │      qwebgl.dll
+│  │      │      │      qwindows.dll
+│  │      │      │      
+│  │      │      └─styles
+│  │      │              qwindowsvistastyle.dll
+│  │      │              
+│  │      └─src
+│  │          │  AlarmPage.cpp
+│  │          │  AlarmPage.h
+│  │          │  AlarmPage.ui
+│  │          │  ConfigPage.cpp
+│  │          │  ConfigPage.h
+│  │          │  ConfigPage.ui
+│  │          │  ControlPage.cpp
+│  │          │  ControlPage.h
+│  │          │  ControlPage.ui
+│  │          │  demo.qrc
+│  │          │  DownloadPage.cpp
+│  │          │  DownloadPage.h
+│  │          │  DownloadPage.ui
+│  │          │  IRCNetSDKDemo.pro
+│  │          │  IRCNetSDKDemo.sln
+│  │          │  IRCNetSDKDemo.vcxproj
+│  │          │  main.cpp
+│  │          │  MainWindow.cpp
+│  │          │  MainWindow.h
+│  │          │  MainWindow.ui
+│  │          │  MsgBox.cpp
+│  │          │  MsgBox.h
+│  │          │  PeripheralPage.cpp
+│  │          │  PeripheralPage.h
+│  │          │  PeripheralPage.ui
+│  │          │  PreviewPage.cpp
+│  │          │  PreviewPage.h
+│  │          │  PreviewPage.ui
+│  │          │  PTZPage.cpp
+│  │          │  PTZPage.h
+│  │          │  PTZPage.ui
+│  │          │  TempAlarmPage.cpp
+│  │          │  TempAlarmPage.h
+│  │          │  TempAlarmPage.ui
+│  │          │  VideoLabel.cpp
+│  │          │  VideoLabel.h
+│  │          │  
+│  │          └─res
+│  │                  tool_icon_circle_sel.png
+│  │                  tool_icon_line_sel.png
+│  │                  tool_icon_point_sel.png
+│  │                  tool_icon_polygon_sel.png
+│  │                  tool_icon_rectangle_sel.png
+│  │                  tool_icon_shielded_area.png
+│  │                  
+│  └─SDK
+│      ├─include
+│      │      IRCNetSDK.h
+│      │      IRCNetSDKDef.h
+│      │      
+│      ├─x64
+│      │      ability.csv
+│      │      avcodec-58.dll
+│      │      avdevice-58.dll
+│      │      avfilter-7.dll
+│      │      avformat-58.dll
+│      │      avutil-56.dll
+│      │      custom.csv
+│      │      IRCNetSDK.dll
+│      │      IRCNetSDK.lib
+│      │      IvsPlaySDK.dll
+│      │      libcrypto-1_1-x64.dll
+│      │      libcurl.dll
+│      │      libssl-1_1-x64.dll
+│      │      lz4.dll
+│      │      PocoCrypto64.dll
+│      │      PocoFoundation64.dll
+│      │      PocoJSON64.dll
+│      │      SDL2.dll
+│      │      StdPlaySDK.dll
+│      │      swresample-3.dll
+│      │      swscale-5.dll
+│      │      
+│      └─x86
+│              ability.csv
+│              avcodec-58.dll
+│              avdevice-58.dll
+│              avfilter-7.dll
+│              avformat-58.dll
+│              avutil-56.dll
+│              custom.csv
+│              IRCNetSDK.dll
+│              IRCNetSDK.lib
+│              IvsPlaySDK.dll
+│              libcrypto-1_1.dll
+│              libcurl.dll
+│              libssl-1_1.dll
+│              lz4.dll
+│              PocoCrypto.dll
+│              PocoFoundation.dll
+│              PocoJSON.dll
+│              SDL2.dll
+│              StdPlaySDK.dll
+│              swresample-3.dll
+│              swscale-5.dll
+│              
+└─xlsx
+    │  src.pro
+    │  
+    └─xlsx
+        │  qtxlsx.pri
+        │  xlsx.pro
+        │  xlsxabstractooxmlfile.cpp
+        │  xlsxabstractooxmlfile.h
+        │  xlsxabstractooxmlfile_p.h
+        │  xlsxabstractsheet.cpp
+        │  xlsxabstractsheet.h
+        │  xlsxabstractsheet_p.h
+        │  xlsxcell.cpp
+        │  xlsxcell.h
+        │  xlsxcellformula.cpp
+        │  xlsxcellformula.h
+        │  xlsxcellformula_p.h
+        │  xlsxcellrange.cpp
+        │  xlsxcellrange.h
+        │  xlsxcellreference.cpp
+        │  xlsxcellreference.h
+        │  xlsxcell_p.h
+        │  xlsxchart.cpp
+        │  xlsxchart.h
+        │  xlsxchartsheet.cpp
+        │  xlsxchartsheet.h
+        │  xlsxchartsheet_p.h
+        │  xlsxchart_p.h
+        │  xlsxcolor.cpp
+        │  xlsxcolor_p.h
+        │  xlsxconditionalformatting.cpp
+        │  xlsxconditionalformatting.h
+        │  xlsxconditionalformatting_p.h
+        │  xlsxcontenttypes.cpp
+        │  xlsxcontenttypes_p.h
+        │  xlsxdatavalidation.cpp
+        │  xlsxdatavalidation.h
+        │  xlsxdatavalidation_p.h
+        │  xlsxdocpropsapp.cpp
+        │  xlsxdocpropsapp_p.h
+        │  xlsxdocpropscore.cpp
+        │  xlsxdocpropscore_p.h
+        │  xlsxdocument.cpp
+        │  xlsxdocument.h
+        │  xlsxdocument_p.h
+        │  xlsxdrawing.cpp
+        │  xlsxdrawinganchor.cpp
+        │  xlsxdrawinganchor_p.h
+        │  xlsxdrawing_p.h
+        │  xlsxformat.cpp
+        │  xlsxformat.h
+        │  xlsxformat_p.h
+        │  xlsxglobal.h
+        │  xlsxmediafile.cpp
+        │  xlsxmediafile_p.h
+        │  xlsxnumformatparser.cpp
+        │  xlsxnumformatparser_p.h
+        │  xlsxrelationships.cpp
+        │  xlsxrelationships_p.h
+        │  xlsxrichstring.cpp
+        │  xlsxrichstring.h
+        │  xlsxrichstring_p.h
+        │  xlsxsharedstrings.cpp
+        │  xlsxsharedstrings_p.h
+        │  xlsxsimpleooxmlfile.cpp
+        │  xlsxsimpleooxmlfile_p.h
+        │  xlsxstyles.cpp
+        │  xlsxstyles_p.h
+        │  xlsxtheme.cpp
+        │  xlsxtheme_p.h
+        │  xlsxutility.cpp
+        │  xlsxutility_p.h
+        │  xlsxworkbook.cpp
+        │  xlsxworkbook.h
+        │  xlsxworkbook_p.h
+        │  xlsxworksheet.cpp
+        │  xlsxworksheet.h
+        │  xlsxworksheet_p.h
+        │  xlsxzipreader.cpp
+        │  xlsxzipreader_p.h
+        │  xlsxzipwriter.cpp
+        │  xlsxzipwriter_p.h
+        │  
+        └─doc
+            │  qtxlsx.qdocconf
+            │  
+            ├─snippets
+            │      doc_src_qtxlsx.cpp
+            │      doc_src_qtxlsx.pro
+            │      
+            └─src
+                    examples.qdoc
+                    qtxlsx-index.qdoc
+                    qtxlsx.qdoc
+                    usage.qdoc
+                    

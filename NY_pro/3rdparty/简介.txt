@@ -1,0 +1,97 @@
+现在的配置是：
+
+✅ /meter_reading - 发布 Float32 类型
+✅ /meter_reading_info - 发布json类型（包含成功状态、读数值和消息描述）
+
+话题说明
+1. /meter_reading (Float32)
+用途：保持向后兼容
+内容：只有读数值（0.0-1.0）
+2. /meter_reading_info (String)
+用途：需要详细状态信息的节点使用
+内容：
+timestamp - 时间戳
+success - 是否成功读数
+reading - 读数值
+message - 状态描述（"表计读数成功" 或 "未能检测到表计读数" 等）
+
+--------------------------------------------------------------
+
+json数据结构
+{
+  "timestamp": 1763548123.456789,  // 时间戳（秒）
+  "success": true,                 // 是否成功
+  "reading": 0.6523,               // 读数值
+  "message": "表计读数成功"         // 状态描述
+}
+
+可能的 message 值：
+
+"表计读数成功" - 成功
+"未能检测到表计读数" - 读数为 None
+"读数值超出有效范围 (0-1)" - 读数超出范围
+
+-----------------------------------------------------
+
+C++订阅示例
+#include <ros/ros.h>
+#include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
+#include <json/json.h>  // 需要安装: sudo apt-get install libjsoncpp-dev
+
+void infoCallback(const std_msgs::String::ConstPtr& msg)
+{
+    // 解析JSON
+    Json::Value root;
+    Json::Reader reader;
+    
+    if (reader.parse(msg->data, root))
+    {
+        double timestamp = root["timestamp"].asDouble();
+        bool success = root["success"].asBool();
+        double reading = root["reading"].asDouble();
+        std::string message = root["message"].asString();
+        
+        ROS_INFO("========================================");
+        ROS_INFO("时间戳: %.2f", timestamp);
+        ROS_INFO("成功: %s", success ? "是" : "否");
+        ROS_INFO("读数: %.4f", reading);
+        ROS_INFO("消息: %s", message.c_str());
+        
+        if (success)
+        {
+            if (reading > 0.8)
+            {
+                ROS_WARN("⚠️ 读数过高！");
+            }
+        }
+        else
+        {
+            ROS_ERROR("❌ 读数失败: %s", message.c_str());
+        }
+    }
+    else
+    {
+        ROS_ERROR("JSON 解析失败");
+    }
+}
+
+void readingCallback(const std_msgs::Float32::ConstPtr& msg)
+{
+    ROS_INFO("读数: %.4f", msg->data);
+}
+
+int main(int argc, char** argv)
+{
+    ros::init(argc, argv, "meter_listener");
+    ros::NodeHandle nh;
+    
+    // 订阅详细信息
+    ros::Subscriber info_sub = nh.subscribe("/meter_reading_info", 10, infoCallback);
+    
+    // 或者只订阅读数值
+    // ros::Subscriber reading_sub = nh.subscribe("/meter_reading", 10, readingCallback);
+    
+    ros::spin();
+    return 0;
+}

@@ -1,0 +1,10 @@
+<RCC>
+  <qresource prefix="res">
+    <file>res/tool_icon_circle_sel.png</file>
+    <file>res/tool_icon_line_sel.png</file>
+    <file>res/tool_icon_point_sel.png</file>
+    <file>res/tool_icon_polygon_sel.png</file>
+    <file>res/tool_icon_rectangle_sel.png</file>
+	<file>res/tool_icon_shielded_area.png</file>
+  </qresource>
+</RCC>

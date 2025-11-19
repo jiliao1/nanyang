@@ -1,0 +1,58 @@
+# Qt/C++ Build artifacts
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.exp
+*.ilk
+*.pdb
+*.manifest
+
+# Build directories
+build*/
+release/
+debug/
+Release/
+Debug/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+
+# Qt specific
+*.pro.user
+*.pro.user.*
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+Makefile
+Makefile.*
+*.moc
+
+# FFmpeg libraries (too large)
+*.dll
+*.lib
+*.def
+
+# Visual Studio
+*.suo
+*.user
+*.sln.docstates
+.vs/
+
+# Deploy output
+deploy/output/
+
+# Temporary files
+*.log
+*.tmp
+*.temp
+~*
+
+# OS files
+.DS_Store
+Thumbs.db
