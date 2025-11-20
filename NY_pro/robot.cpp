@@ -54,9 +54,10 @@ robot::robot(QWidget *parent)
     , m_latestRobotYaw(0.0)
     , m_latestPtzPos_World(0.0, 0.0, 0.0)
     , m_latestPtzRotation()
-    , m_currentPtzZoom(16)
+    , m_currentPtzZoom(1)  // 初始化为滑块最小值1，而不是zoom像素值16
     , m_pointCounter(1) // 初始化点计数器
     , m_robotPositionMarker(nullptr) // 初始化机器人位置标记
+    , m_fakeGreenDot(nullptr) // 初始化拓扑地图绿点标记
     , m_videoTcpSocket(nullptr)
     , m_infraredTcpSocket(nullptr)
     , m_videoWatchdog(nullptr)
@@ -260,6 +261,10 @@ robot::robot(QWidget *parent)
     m_currentTaskId.clear();
     m_currentTaskStartTime.clear();
     
+    // 初始化TF时间戳为0
+    m_lastRobotTfTimestamp = 0;
+    m_lastPtzTfTimestamp = 0;
+    
     qDebug() << "程序启动：已清除所有任务状态和路径数据";
     
     // 任务开始按钮默认启用,点击时会弹出文件选择对话框
@@ -275,12 +280,12 @@ robot::robot(QWidget *parent)
     // 清空方案名称，确保每次启动都是干净状态
     ui->InspectionPlanName->clear();
     
-    // 初始化时禁用所有点操作按钮，需要先加载地图
-//    ui->btn_AddNavPoint->setEnabled(false);
-//    ui->btn_AddInspectionPoint->setEnabled(false);
-//    ui->btn_UndoLastPoint->setEnabled(false);
-//    ui->btn_ClearAllPoints->setEnabled(false);
-//    ui->btn_SavePlan->setEnabled(false);
+    // 初始化时启用所有点操作按钮，不需要先加载地图
+    ui->btn_AddNavPoint->setEnabled(true);
+    ui->btn_AddInspectionPoint->setEnabled(true);
+    ui->btn_UndoLastPoint->setEnabled(false);  // 没有点时仍禁用撤回
+    ui->btn_ClearAllPoints->setEnabled(false);  // 没有点时仍禁用清除
+    ui->btn_SavePlan->setEnabled(false);  // 没有点时仍禁用保存
 
     connect(ui->DetailBtn, SIGNAL(clicked()), this, SLOT(show_rpmore()));
     connect(ui->inquireBtn, SIGNAL(clicked()), this, SLOT(showReport()));
@@ -294,9 +299,14 @@ robot::robot(QWidget *parent)
     // [可选] 启用鼠标拖拽平移和滚轮缩放
     ui->mapGraphicsView->setDragMode(QGraphicsView::ScrollHandDrag);
     ui->mapGraphicsView->setRenderHint(QPainter::Antialiasing);
+    ui->mapGraphicsView->setRenderHint(QPainter::SmoothPixmapTransform);
     ui->mapGraphicsView->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    ui->mapGraphicsView->setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+    ui->mapGraphicsView->setResizeAnchor(QGraphicsView::AnchorViewCenter);
     ui->mapGraphicsView->setInteractive(true); // 启用交互
+    ui->mapGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->mapGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->mapGraphicsView->setViewportUpdateMode(QGraphicsView::MinimalViewportUpdate);
+    ui->mapGraphicsView->setCacheMode(QGraphicsView::CacheBackground);
 
     // --- 初始化点云3D视图 ---
     m_pointCloudView = new PointCloudViewWidget(this);
@@ -345,6 +355,9 @@ robot::robot(QWidget *parent)
 
     // ===== 数据库连接测试 =====
     testDatabaseConnection();
+    
+    // ===== 自动加载拓扑地图 =====
+    initTopologyMap();
 
 }
 
@@ -1360,10 +1373,10 @@ void robot::on_Btn_PlanSelect_clicked()
                 
                 m_pointList.append(internalPoint);
                 
-                // 在地图上绘制
-                QPointF worldPos(point["x"].toDouble(), point["y"].toDouble());
-                QPointF scenePos = convertWorldToScene(worldPos);
-                addPointToMap(scenePos, "inspection", point["order"].toInt() + 1, point["yaw"].toDouble());
+                // 在地图上绘制 - 拓扑地图模式下已禁用
+                // QPointF worldPos(point["x"].toDouble(), point["y"].toDouble());
+                // QPointF scenePos = convertWorldToScene(worldPos);
+                // addPointToMap(scenePos, "inspection", point["order"].toInt() + 1, point["yaw"].toDouble());
                 
                 if (point["order"].toInt() + 1 >= m_pointCounter) {
                     m_pointCounter = point["order"].toInt() + 2;
@@ -1397,11 +1410,11 @@ void robot::on_Btn_PlanSelect_clicked()
                 QJsonArray posArray = pointObj["pos"].toArray();
                 if (posArray.count() < 2) continue;
 
-                QPointF worldPos(posArray[0].toDouble(), posArray[1].toDouble());
-                QPointF scenePos = convertWorldToScene(worldPos);
-                double yaw = pointObj["yaw"].toDouble();
-
-                addPointToMap(scenePos, type, id, yaw);
+                // 拓扑地图模式下已禁用地图标记绘制
+                // QPointF worldPos(posArray[0].toDouble(), posArray[1].toDouble());
+                // QPointF scenePos = convertWorldToScene(worldPos);
+                // double yaw = pointObj["yaw"].toDouble();
+                // addPointToMap(scenePos, type, id, yaw);
 
                 if (id >= m_pointCounter) {
                     m_pointCounter = id + 1;
@@ -1424,11 +1437,11 @@ void robot::onWebSocketConnected()
     ui->connect_status->append(QString("连接成功: %1").arg(m_webSocketUrl));
     QJsonObject sub_reached;
     sub_reached["op"] = "subscribe";
-    sub_reached["topic"] = "/path_follower/reached_waypoint";
+    sub_reached["topic"] = "/move_base_simple/goal";
     sub_reached["type"] = "geometry_msgs/PoseStamped";
     m_webSocket->sendTextMessage(QJsonDocument(sub_reached).toJson(QJsonDocument::Compact));
-
-    ui->connect_status->append("已订阅抵达信号: /path_follower/reached_waypoint");
+    
+    ui->connect_status->append("已订阅抵达信号: /move_base_simple/goal");
     // 订阅点云话题
     subscribeToPointClouds();
 
@@ -1559,7 +1572,7 @@ void robot::onWebMessageReceived(const QString &message)
             onTFMessageReceived(msg);
             return;
         }
-        else if (topic == "/path_follower/reached_waypoint")
+        else if (topic == "/move_base_simple/goal")
         {
             // 解析 geometry_msgs/PoseStamped
             QJsonObject msg = root.value("msg").toObject();
@@ -1983,6 +1996,36 @@ void robot::on_btn_AddNavPoint_clicked()
         return;
     }
     
+    // 检查TF数据新鲜度 (TF以1Hz发布，检查是否在1.5秒内收到过数据)
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 robotTfAge = currentTime - m_lastRobotTfTimestamp;
+    qint64 ptzTfAge = currentTime - m_lastPtzTfTimestamp;
+    
+    if (robotTfAge > 1500 && m_lastRobotTfTimestamp > 0) {
+        QMessageBox::warning(this, "数据过时", 
+            QString("机器人TF数据已过时 (%1 秒前)，请稍等片刻后重试。\n\n"
+                    "TF数据以1Hz频率发布，建议等待1-2秒后再添加点。")
+            .arg(robotTfAge / 1000.0, 0, 'f', 1));
+        ui->connect_status->append(QString("警告:机器人TF数据过时 (%1秒前)").arg(robotTfAge / 1000.0, 0, 'f', 1));
+        return;
+    }
+    
+    if (ptzTfAge > 1500 && m_lastPtzTfTimestamp > 0) {
+        QMessageBox::StandardButton reply = QMessageBox::question(this, 
+            "PTZ数据过时", 
+            QString("PTZ TF数据已过时 (%1 秒前)。\n\n"
+                    "TF数据以1Hz频率发布，建议等待1-2秒后再添加点。\n\n"
+                    "是否仍要使用过时数据添加此导航点?")
+            .arg(ptzTfAge / 1000.0, 0, 'f', 1),
+            QMessageBox::Yes | QMessageBox::No);
+            
+        if (reply == QMessageBox::No) {
+            ui->connect_status->append("已取消添加导航点(PTZ数据过时)");
+            return;
+        }
+        ui->connect_status->append(QString("警告:使用过时的PTZ数据 (%1秒前)").arg(ptzTfAge / 1000.0, 0, 'f', 1));
+    }
+    
     // 检查云台数据是否有效（在创建点之前检查）
     bool ptzDataValid = true;
     if (m_latestPtzPos_World.isNull() || 
@@ -2007,58 +2050,76 @@ void robot::on_btn_AddNavPoint_clicked()
         ui->connect_status->append("警告：使用无效的云台数据添加路径点");
     }
     
-    // 1. 创建 JSON 对象 (符合你的新格式)
-    QJsonObject pointObj;
-    pointObj["type"] = "navigation";
-    // 格式: "pos": [x, y]
-    pointObj["pos"] = QJsonArray{m_latestRobotPos_World.x(), m_latestRobotPos_World.y()};
-    pointObj["yaw"] = m_latestRobotYaw;
-    pointObj["index"] = m_pointCounter;
+    // 显示等待提示窗口
+    QMessageBox *waitDialog = new QMessageBox(this);
+    waitDialog->setWindowTitle("等待设备稳定");
+    waitDialog->setText("正在等待设备稳定，请稍候...");
+    waitDialog->setStandardButtons(QMessageBox::NoButton);
+    waitDialog->setModal(true);
+    waitDialog->show();
     
-    // 添加云台位置和方向信息
-    QJsonObject ptzInfo;
-    ptzInfo["position"] = QJsonArray{
-        m_latestPtzPos_World.x(),
-        m_latestPtzPos_World.y(),
-        m_latestPtzPos_World.z()
-    };
-    ptzInfo["orientation"] = QJsonArray{
-        m_latestPtzRotation.x(),
-        m_latestPtzRotation.y(),
-        m_latestPtzRotation.z(),
-        m_latestPtzRotation.scalar()
-    };
-    pointObj["ptzInfo"] = ptzInfo;
-    pointObj["zoomValue"] = m_currentPtzZoom;
+    // 处理事件以显示窗口
+    QApplication::processEvents();
+    
+    // 等待2秒
+    QTimer::singleShot(2000, this, [this, waitDialog, ptzDataValid]() {
+        // 2秒后关闭等待窗口
+        waitDialog->close();
+        waitDialog->deleteLater();
+        
+        // 1. 创建 JSON 对象 (符合你的新格式)
+        QJsonObject pointObj;
+        pointObj["type"] = "navigation";
+        // 格式: "pos": [x, y]
+        pointObj["pos"] = QJsonArray{m_latestRobotPos_World.x(), m_latestRobotPos_World.y()};
+        pointObj["yaw"] = m_latestRobotYaw;
+        pointObj["index"] = m_pointCounter;
+        
+        // 添加云台位置和方向信息
+        QJsonObject ptzInfo;
+        ptzInfo["position"] = QJsonArray{
+            m_latestPtzPos_World.x(),
+            m_latestPtzPos_World.y(),
+            m_latestPtzPos_World.z()
+        };
+        ptzInfo["orientation"] = QJsonArray{
+            m_latestPtzRotation.x(),
+            m_latestPtzRotation.y(),
+            m_latestPtzRotation.z(),
+            m_latestPtzRotation.scalar()
+        };
+        pointObj["ptzInfo"] = ptzInfo;
+        pointObj["zoomValue"] = m_currentPtzZoom;
 
-    // 输出调试信息
-    qDebug() << "添加导航点 #" << m_pointCounter 
-             << " 位置:" << m_latestRobotPos_World 
-             << " yaw:" << m_latestRobotYaw << "(" << qRadiansToDegrees(m_latestRobotYaw) << "度)"
-             << " PTZ位置:" << m_latestPtzPos_World
-             << " PTZ方向:" << m_latestPtzRotation
-             << " 缩放:" << m_currentPtzZoom
-             << (ptzDataValid ? "[有效]" : "[无效-警告]");
-    
-    // 2. 添加到内存数据列表（仅临时存储，不保存到文件）
-    m_pointList.append(pointObj); //
+        // 输出调试信息
+        qDebug() << "添加导航点 #" << m_pointCounter 
+                 << " 位置:" << m_latestRobotPos_World 
+                 << " yaw:" << m_latestRobotYaw << "(" << qRadiansToDegrees(m_latestRobotYaw) << "度)"
+                 << " PTZ位置:" << m_latestPtzPos_World
+                 << " PTZ方向:" << m_latestPtzRotation
+                 << " 缩放:" << m_currentPtzZoom
+                 << (ptzDataValid ? "[有效]" : "[无效-警告]");
+        
+        // 2. 添加到内存数据列表（仅临时存储，不保存到文件）
+        m_pointList.append(pointObj); //
 
-    // 3. 在地图上绘制 (使用当前红点位置)
-    QPointF scenePos = convertWorldToScene(m_latestRobotPos_World);
-    addPointToMap(scenePos, "navigation", m_pointCounter, m_latestRobotYaw);
+        // 3. 在地图上绘制 (使用当前红点位置) - 拓扑地图模式下已禁用
+        // QPointF scenePos = convertWorldToScene(m_latestRobotPos_World);
+        // addPointToMap(scenePos, "navigation", m_pointCounter, m_latestRobotYaw);
 
-    m_pointCounter++; //
-    
-    // 有点后启用相关按钮
-    ui->btn_UndoLastPoint->setEnabled(true);
-    ui->btn_ClearAllPoints->setEnabled(true);
-    ui->btn_SavePlan->setEnabled(true);
-    
-    ui->connect_status->append(QString("已添加路径点 #%1: 位置(%.2f, %.2f), 朝向%.1f°")
-        .arg(m_pointCounter - 1)
-        .arg(m_latestRobotPos_World.x())
-        .arg(m_latestRobotPos_World.y())
-        .arg(qRadiansToDegrees(m_latestRobotYaw)));
+        m_pointCounter++; //
+        
+        // 有点后启用相关按钮
+        ui->btn_UndoLastPoint->setEnabled(true);
+        ui->btn_ClearAllPoints->setEnabled(true);
+        ui->btn_SavePlan->setEnabled(true);
+        
+        ui->connect_status->append(QString("已添加路径点 #%1: 位置(%.2f, %.2f), 朝向%.1f°")
+            .arg(m_pointCounter - 1)
+            .arg(m_latestRobotPos_World.x())
+            .arg(m_latestRobotPos_World.y())
+            .arg(qRadiansToDegrees(m_latestRobotYaw)));
+    });
 }
 
 /**
@@ -2075,6 +2136,36 @@ void robot::on_btn_AddInspectionPoint_clicked()
             "3. map->base_link的TF变换是否存在");
         ui->connect_status->append("错误：无法获取机器人位置，当前位置为 (0, 0)");
         return;
+    }
+    
+    // 检查TF数据新鲜度 (TF以1Hz发布，检查是否在1.5秒内收到过数据)
+    qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 robotTfAge = currentTime - m_lastRobotTfTimestamp;
+    qint64 ptzTfAge = currentTime - m_lastPtzTfTimestamp;
+    
+    if (robotTfAge > 1500 && m_lastRobotTfTimestamp > 0) {
+        QMessageBox::warning(this, "数据过时", 
+            QString("机器人TF数据已过时 (%1 秒前)，请稍等片刻后重试。\n\n"
+                    "TF数据以1Hz频率发布，建议等待1-2秒后再添加点。")
+            .arg(robotTfAge / 1000.0, 0, 'f', 1));
+        ui->connect_status->append(QString("警告:机器人TF数据过时 (%1秒前)").arg(robotTfAge / 1000.0, 0, 'f', 1));
+        return;
+    }
+    
+    if (ptzTfAge > 1500 && m_lastPtzTfTimestamp > 0) {
+        QMessageBox::StandardButton reply = QMessageBox::question(this, 
+            "PTZ数据过时", 
+            QString("PTZ TF数据已过时 (%1 秒前)。\n\n"
+                    "TF数据以1Hz频率发布，建议等待1-2秒后再添加点。\n\n"
+                    "是否仍要使用过时数据添加此巡检点?")
+            .arg(ptzTfAge / 1000.0, 0, 'f', 1),
+            QMessageBox::Yes | QMessageBox::No);
+            
+        if (reply == QMessageBox::No) {
+            ui->connect_status->append("已取消添加巡检点(PTZ数据过时)");
+            return;
+        }
+        ui->connect_status->append(QString("警告:使用过时的PTZ数据 (%1秒前)").arg(ptzTfAge / 1000.0, 0, 'f', 1));
     }
     
     // 检查云台数据是否有效（在创建点之前检查）
@@ -2101,57 +2192,75 @@ void robot::on_btn_AddInspectionPoint_clicked()
         ui->connect_status->append("警告：使用无效的云台数据添加巡检点");
     }
 
-    // 1. 创建 JSON 对象
-    QJsonObject pointObj;
-    pointObj["type"] = "inspection";
-    pointObj["pos"] = QJsonArray{m_latestRobotPos_World.x(), m_latestRobotPos_World.y()};
-    pointObj["yaw"] = m_latestRobotYaw;
-    pointObj["index"] = m_pointCounter;
+    // 显示等待提示窗口
+    QMessageBox *waitDialog = new QMessageBox(this);
+    waitDialog->setWindowTitle("等待设备稳定");
+    waitDialog->setText("正在等待设备稳定，请稍候...");
+    waitDialog->setStandardButtons(QMessageBox::NoButton);
+    waitDialog->setModal(true);
+    waitDialog->show();
     
-    // 添加云台位置和方向信息（与导航点相同的格式）
-    QJsonObject ptzInfo;
-    ptzInfo["position"] = QJsonArray{
-        m_latestPtzPos_World.x(),
-        m_latestPtzPos_World.y(),
-        m_latestPtzPos_World.z()
-    };
-    ptzInfo["orientation"] = QJsonArray{
-        m_latestPtzRotation.x(),
-        m_latestPtzRotation.y(),
-        m_latestPtzRotation.z(),
-        m_latestPtzRotation.scalar()
-    };
-    pointObj["ptzInfo"] = ptzInfo;
-    pointObj["zoomValue"] = m_currentPtzZoom;
-
-    // 输出调试信息
-    qDebug() << "添加巡检点 #" << m_pointCounter 
-             << " 位置:" << m_latestRobotPos_World 
-             << " yaw:" << m_latestRobotYaw << "(" << qRadiansToDegrees(m_latestRobotYaw) << "度)"
-             << " PTZ位置:" << m_latestPtzPos_World
-             << " PTZ方向:" << m_latestPtzRotation
-             << " 缩放:" << m_currentPtzZoom
-             << (ptzDataValid ? "[有效]" : "[无效-警告]");
-
-    // 2. 添加到内存数据列表（仅临时存储，不保存到文件）
-    m_pointList.append(pointObj);
-
-    // 3. 在地图上绘制
-    QPointF scenePos = convertWorldToScene(m_latestRobotPos_World);
-    addPointToMap(scenePos, "inspection", m_pointCounter, m_latestRobotYaw);
-
-    m_pointCounter++;
+    // 处理事件以显示窗口
+    QApplication::processEvents();
     
-    // 有点后启用相关按钮
-    ui->btn_UndoLastPoint->setEnabled(true);
-    ui->btn_ClearAllPoints->setEnabled(true);
-    ui->btn_SavePlan->setEnabled(true);
-    
-    ui->connect_status->append(QString("已添加巡检点 #%1: 位置(%.2f, %.2f), 朝向%.1f°")
-        .arg(m_pointCounter - 1)
-        .arg(m_latestRobotPos_World.x())
-        .arg(m_latestRobotPos_World.y())
-        .arg(qRadiansToDegrees(m_latestRobotYaw)));
+    // 等待2秒
+    QTimer::singleShot(2000, this, [this, waitDialog, ptzDataValid]() {
+        // 2秒后关闭等待窗口
+        waitDialog->close();
+        waitDialog->deleteLater();
+        
+        // 1. 创建 JSON 对象
+        QJsonObject pointObj;
+        pointObj["type"] = "inspection";
+        pointObj["pos"] = QJsonArray{m_latestRobotPos_World.x(), m_latestRobotPos_World.y()};
+        pointObj["yaw"] = m_latestRobotYaw;
+        pointObj["index"] = m_pointCounter;
+        
+        // 添加云台位置和方向信息（与导航点相同的格式）
+        QJsonObject ptzInfo;
+        ptzInfo["position"] = QJsonArray{
+            m_latestPtzPos_World.x(),
+            m_latestPtzPos_World.y(),
+            m_latestPtzPos_World.z()
+        };
+        ptzInfo["orientation"] = QJsonArray{
+            m_latestPtzRotation.x(),
+            m_latestPtzRotation.y(),
+            m_latestPtzRotation.z(),
+            m_latestPtzRotation.scalar()
+        };
+        pointObj["ptzInfo"] = ptzInfo;
+        pointObj["zoomValue"] = m_currentPtzZoom;
+
+        // 输出详细调试信息
+        qDebug() << "========== 添加巡检点 #" << m_pointCounter << " ==========";
+        qDebug() << "机器人位置:" << m_latestRobotPos_World;
+        qDebug() << "机器人朝向:" << m_latestRobotYaw << "弧度 (" << qRadiansToDegrees(m_latestRobotYaw) << "度)";
+        qDebug() << "PTZ位置:" << m_latestPtzPos_World << (ptzDataValid ? "[✓有效]" : "[✗无效-警告]");
+        qDebug() << "PTZ方向(四元数):" << m_latestPtzRotation << (ptzDataValid ? "[✓有效]" : "[✗无效-警告]");
+        qDebug() << "Zoom滑块值:" << m_currentPtzZoom << "(1-23范围)";
+        qDebug() << "============================================";
+
+        // 2. 添加到内存数据列表（仅临时存储，不保存到文件）
+        m_pointList.append(pointObj);
+
+        // 3. 在地图上绘制 - 拓扑地图模式下已禁用
+        // QPointF scenePos = convertWorldToScene(m_latestRobotPos_World);
+        // addPointToMap(scenePos, "inspection", m_pointCounter, m_latestRobotYaw);
+
+        m_pointCounter++;
+        
+        // 有点后启用相关按钮
+        ui->btn_UndoLastPoint->setEnabled(true);
+        ui->btn_ClearAllPoints->setEnabled(true);
+        ui->btn_SavePlan->setEnabled(true);
+        
+        ui->connect_status->append(QString("已添加巡检点 #%1: 位置(%.2f, %.2f), 朝向%.1f°")
+            .arg(m_pointCounter - 1)
+            .arg(m_latestRobotPos_World.x())
+            .arg(m_latestRobotPos_World.y())
+            .arg(qRadiansToDegrees(m_latestRobotYaw)));
+    });
 }
 
 void robot::on_btn_UndoLastPoint_clicked()
@@ -3246,7 +3355,7 @@ void robot::onTFMessageReceived(const QJsonObject &msg)
     // TF消息是一个包含多个TransformStamped的数组
     QJsonArray transforms = msg.value("transforms").toArray();
     
-//    qDebug() << "Received TF message with" << transforms.size() << "transforms";
+    qDebug() << "Received TF message with" << transforms.size() << "transforms";
     
     for (const QJsonValue &tfValue : transforms) {
         QJsonObject tf = tfValue.toObject();
@@ -3259,7 +3368,7 @@ void robot::onTFMessageReceived(const QJsonObject &msg)
         if (child_frame.startsWith("/")) child_frame = child_frame.mid(1);
         if (parent_frame.startsWith("/")) parent_frame = parent_frame.mid(1);
         
-//        qDebug() << "TF:" << parent_frame << "->" << child_frame;
+        qDebug() << "TF:" << parent_frame << "->" << child_frame;
         
         // 解析transform
         QJsonObject transform = tf.value("transform").toObject();
@@ -3291,14 +3400,14 @@ void robot::onTFMessageReceived(const QJsonObject &msg)
         
         m_tfTransforms[child_frame] = tfTransform;
         
-//        qDebug() << "Stored TF" << child_frame << "parent:" << parent_frame
-//                 << "trans:" << trans << "rot:" << rot;
+        qDebug() << "Stored TF" << child_frame << "parent:" << parent_frame 
+                 << "trans:" << trans << "rot:" << rot;
     }
     
     // 计算并更新三个坐标系的位置
     if (m_pointCloudView) {
-//        qDebug() << "Updating coordinate frames visualization...";
-//        qDebug() << "Current TF transforms count:" << m_tfTransforms.size();
+        qDebug() << "Updating coordinate frames visualization...";
+        qDebug() << "Current TF transforms count:" << m_tfTransforms.size();
         
         // map坐标系固定在原点
         m_pointCloudView->updateTF("map", QVector3D(0, 0, 0), QQuaternion());
@@ -3307,7 +3416,7 @@ void robot::onTFMessageReceived(const QJsonObject &msg)
         QVector3D baseLinkTrans;
         QQuaternion baseLinkRot;
         if (computeTransform("map", "base_link", baseLinkTrans, baseLinkRot)) {
-//            qDebug() << "Computed base_link transform:" << baseLinkTrans << baseLinkRot;
+            qDebug() << "Computed base_link transform:" << baseLinkTrans << baseLinkRot;
             m_pointCloudView->updateTF("base_link", baseLinkTrans, baseLinkRot);
             
             // 【新增】更新机器人在map坐标系中的位置和朝向，用于路径点记录
@@ -3322,7 +3431,10 @@ void robot::onTFMessageReceived(const QJsonObject &msg)
             double qz = baseLinkRot.z();
             m_latestRobotYaw = qAtan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz));
             
-//            qDebug() << "Updated robot position in map:" << m_latestRobotPos_World << "yaw:" << m_latestRobotYaw;
+            // 更新机器人TF数据接收时间戳
+            m_lastRobotTfTimestamp = QDateTime::currentMSecsSinceEpoch();
+            
+            qDebug() << "Updated robot position in map:" << m_latestRobotPos_World << "yaw:" << m_latestRobotYaw;
             
             // 更新2D地图上的红点位置
             if (m_mapIsLoaded && m_robotPositionMarker) {
@@ -3330,24 +3442,30 @@ void robot::onTFMessageReceived(const QJsonObject &msg)
                 m_robotPositionMarker->setPos(scenePos);
             }
         } else {
-//            qDebug() << "Failed to compute base_link transform";
+            qDebug() << "Failed to compute base_link transform";
         }
         
         // ptz_link相对于map的变换
         QVector3D ptzLinkTrans;
         QQuaternion ptzLinkRot;
         if (computeTransform("map", "ptz_link", ptzLinkTrans, ptzLinkRot)) {
-//            qDebug() << "✓ Computed ptz_link transform:" << ptzLinkTrans << ptzLinkRot;
+            qDebug() << "✓ Computed ptz_link transform:" << ptzLinkTrans << ptzLinkRot;
             m_pointCloudView->updateTF("ptz_link", ptzLinkTrans, ptzLinkRot);
             
             // 【新增】更新云台在map坐标系中的位置和方向
             m_latestPtzPos_World = ptzLinkTrans;
             m_latestPtzRotation = ptzLinkRot;
-            qDebug() << "✓ Updated PTZ position in map:" << m_latestPtzPos_World 
-                     << "rotation:" << m_latestPtzRotation;
+            
+            // 更新PTZ TF数据接收时间戳
+            m_lastPtzTfTimestamp = QDateTime::currentMSecsSinceEpoch();
+            
+            qDebug() << "✓ [PTZ数据更新] 位置:" << m_latestPtzPos_World 
+                     << "旋转:" << m_latestPtzRotation
+                     << "| 当前zoom滑块值:" << m_currentPtzZoom;
         } else {
-            qWarning() << "✗ Failed to compute ptz_link transform - TF链可能不完整";
-            qDebug() << "当前可用的TF变换:";
+            qWarning() << "✗ [PTZ错误] 无法计算ptz_link变换 - TF链不完整或延迟";
+            qWarning() << "✗ 当前PTZ数据保持为:" << m_latestPtzPos_World << m_latestPtzRotation;
+            qDebug() << "当前可用的TF变换链:";
             for (auto it = m_tfTransforms.begin(); it != m_tfTransforms.end(); ++it) {
                 qDebug() << "  " << it.value().parent_frame << "->" << it.key();
             }
@@ -3843,20 +3961,55 @@ void robot::initTopologyMap()
     // 1. 清理场景，防止重影
         m_mapScene->clear();
 
-        // 2. 加载拓扑图背景
-        // 路径取决于你的qrc结构，如果还是之前那个路径就用这个：
-        QPixmap bgImage(":/images/3rdparty/502.png");
+        // 2. 加载拓扑图背景 - 使用绝对路径
+        QString imagePath = "C:/Users/shunshun/Desktop/image/502.png";
+        qDebug() << "尝试加载拓扑图:" << imagePath;
+        
+        // 检查文件是否存在
+        QFileInfo fileInfo(imagePath);
+        if (!fileInfo.exists()) {
+            qDebug() << "❌ 文件不存在:" << imagePath;
+            ui->connect_status->append("❌ 文件不存在: " + imagePath);
+            m_mapScene->addRect(0, 0, 1038, 466, QPen(Qt::red), QBrush(Qt::white));
+            m_mapScene->addText("文件不存在，请检查路径")->setDefaultTextColor(Qt::red);
+            ui->mapGraphicsView->fitInView(m_mapScene->sceneRect(), Qt::KeepAspectRatio);
+            return;
+        }
+        
+        qDebug() << "文件存在，大小:" << fileInfo.size() << "字节";
+        
+        QPixmap bgImage(imagePath);
 
         if (bgImage.isNull()) {
-            qDebug() << "❌ 错误：无法加载拓扑图 :/images/3rdparty/502.png";
+            qDebug() << "❌ 错误：无法加载图片（可能格式不支持或文件损坏）";
+            ui->connect_status->append("❌ 错误：无法加载图片，请检查文件格式");
             // 如果图片加载失败，绘制一个红色的矩形框作为占位符，避免程序崩溃
             m_mapScene->addRect(0, 0, 1038, 466, QPen(Qt::red), QBrush(Qt::white));
-            m_mapScene->addText("图片加载失败，请检查资源路径")->setDefaultTextColor(Qt::red);
+            m_mapScene->addText("图片加载失败，请检查文件格式")->setDefaultTextColor(Qt::red);
         } else {
+            qDebug() << "✅ 图片加载成功，尺寸:" << bgImage.width() << "x" << bgImage.height();
             m_mapScene->addPixmap(bgImage);
-            m_mapScene->setSceneRect(bgImage.rect());
-            qDebug() << "✅ 拓扑图加载成功，尺寸:" << bgImage.width() << "x" << bgImage.height();
+            
+            // 设置场景范围比图片大很多，提供更大的拖动空间
+            QRectF imageRect = bgImage.rect();
+            qreal margin = 300; // 300像素边距，提供更大的拖动范围
+            m_mapScene->setSceneRect(imageRect.adjusted(-margin, -margin, margin, margin));
+            
+            qDebug() << "场景范围已设置:" << m_mapScene->sceneRect();
+            ui->connect_status->append(QString("✅ 拓扑图加载成功 (%1x%2)").arg(bgImage.width()).arg(bgImage.height()));
+            
+            // 启用滚动条
+            ui->mapGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            ui->mapGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            
+            // 不自动缩放以适应视图，保持图片原始大小
+            ui->mapGraphicsView->resetTransform();
+            
+            // 居中显示图片
+            ui->mapGraphicsView->centerOn(imageRect.center());
         }
+        
+        ui->mapGraphicsView->show();
 
         // 3. 【关键】填入你刚刚量好的精准坐标 (ID -> 像素X, 像素Y)
         m_topoPixelMap.clear();

@@ -245,6 +245,16 @@ private:
     */
     int m_currentPtzZoom;
     
+    /**
+    * @brief 记录最后一次收到机器人TF数据的时间戳
+    */
+    qint64 m_lastRobotTfTimestamp;
+    
+    /**
+    * @brief 记录最后一次收到PTZ TF数据的时间戳
+    */
+    qint64 m_lastPtzTfTimestamp;
+    
     int m_pointCounter;            // 路径点计数器
 
 

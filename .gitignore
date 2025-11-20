@@ -1,3 +1,14 @@
+# 只保留 NY_pro 目录，其他所有文件都忽略
+/*
+!/NY_pro/
+/NY_pro/*
+!/NY_pro/*.cpp
+!/NY_pro/*.h
+!/NY_pro/*.ui
+!/NY_pro/*.pro
+!/NY_pro/*.qrc
+!/NY_pro/*.md
+
 # Qt/C++ Build artifacts
 *.o
 *.obj
