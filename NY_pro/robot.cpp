@@ -57,7 +57,6 @@ robot::robot(QWidget *parent)
     , m_currentPtzZoom(1)  // 初始化为滑块最小值1，而不是zoom像素值16
     , m_pointCounter(1) // 初始化点计数器
     , m_robotPositionMarker(nullptr) // 初始化机器人位置标记
-    , m_fakeGreenDot(nullptr) // 初始化拓扑地图绿点标记
     , m_videoTcpSocket(nullptr)
     , m_infraredTcpSocket(nullptr)
     , m_videoWatchdog(nullptr)
@@ -84,19 +83,24 @@ robot::robot(QWidget *parent)
     m_videoHost = "192.168.16.146";
     m_videoPort = 9001;       // 视频TCP端口
     m_infraredPort = 9002;    // 红外TCP端口
+    m_navigationPort = 8084;  // 导航视频TCP端口
     
     m_videoTcpSocket = new QTcpSocket(this);
     m_infraredTcpSocket = new QTcpSocket(this);
+    m_navigationTcpSocket = new QTcpSocket(this);
     
     // 禁用代理,避免proxy type错误
     m_videoTcpSocket->setProxy(QNetworkProxy::NoProxy);
     m_infraredTcpSocket->setProxy(QNetworkProxy::NoProxy);
+    m_navigationTcpSocket->setProxy(QNetworkProxy::NoProxy);
     
     // 创建看门狗定时器,每5秒检查一次是否有新帧
     m_videoWatchdog = new QTimer(this);
     m_infraredWatchdog = new QTimer(this);
+    m_navigationWatchdog = new QTimer(this);
     connect(m_videoWatchdog, &QTimer::timeout, this, &robot::checkVideoTimeout);
     connect(m_infraredWatchdog, &QTimer::timeout, this, &robot::checkInfraredTimeout);
+    connect(m_navigationWatchdog, &QTimer::timeout, this, &robot::checkNavigationTimeout);
     
     // 创建控制指令定时器
     m_baseControlTimer = new QTimer(this);
@@ -107,6 +111,7 @@ robot::robot(QWidget *parent)
     // 初始化时间戳,避免看门狗立即超时
     m_lastVideoFrame = QDateTime::currentDateTime();
     m_lastInfraredFrame = QDateTime::currentDateTime();
+    m_lastNavigationFrame = QDateTime::currentDateTime();
     
     // TCP视频流信号连接
     connect(m_videoTcpSocket, &QTcpSocket::connected, this, [this](){
@@ -152,6 +157,28 @@ robot::robot(QWidget *parent)
                 ui->connect_status->append("红外TCP错误: " + m_infraredTcpSocket->errorString());
             });
     
+    // TCP导航视频流信号连接
+    connect(m_navigationTcpSocket, &QTcpSocket::connected, this, [this](){
+        qDebug() << "========== 导航视频TCP连接成功 ==========";
+        qDebug() << "主机:" << m_videoHost << "端口:" << m_navigationPort;
+        ui->connect_status->append("导航视频流已连接: " + m_videoHost + ":" + QString::number(m_navigationPort));
+        m_lastNavigationFrame = QDateTime::currentDateTime();
+        m_navigationWatchdog->start(5000);
+    });
+    connect(m_navigationTcpSocket, &QTcpSocket::disconnected, this, [this](){
+        qDebug() << "========== 导航视频TCP断开连接 ==========";
+        m_navigationWatchdog->stop();
+        QTimer::singleShot(3000, this, &robot::connectNavigationStream); // 3秒后重连
+    });
+    connect(m_navigationTcpSocket, &QTcpSocket::readyRead, this, &robot::processNavigationData);
+    connect(m_navigationTcpSocket, QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::error),
+            [this](QAbstractSocket::SocketError error){
+                qDebug() << "========== 导航视频TCP错误 ==========";
+                qDebug() << "错误代码:" << error;
+                qDebug() << "错误信息:" << m_navigationTcpSocket->errorString();
+                ui->connect_status->append("导航视频TCP错误: " + m_navigationTcpSocket->errorString());
+            });
+    
     // 初始化FFmpeg解码器
     qDebug() << "===== 初始化FFmpeg解码器 =====";
     if (!initFFmpegDecoder(&m_videoCodecCtx, &m_videoFrame, &m_videoSwFrame, 
@@ -162,8 +189,13 @@ robot::robot(QWidget *parent)
                           &m_infraredPacket, &m_infraredHwAccelEnabled, "mjpeg")) {
         qDebug() << "红外解码器初始化失败,将无法显示红外";
     }
+    if (!initFFmpegDecoder(&m_navigationCodecCtx, &m_navigationFrame, &m_navigationSwFrame, 
+                          &m_navigationPacket, &m_navigationHwAccelEnabled, "mjpeg-navigation")) {
+        qDebug() << "导航视频解码器初始化失败,将无法显示导航视频";
+    }
     m_videoSwsCtx = nullptr;
     m_infraredSwsCtx = nullptr;
+    m_navigationSwsCtx = nullptr;
     
     dbase = new dataBase();
     
@@ -329,8 +361,43 @@ robot::robot(QWidget *parent)
     guideLayout->setContentsMargins(5, 5, 5, 5);
     guideLayout->setSpacing(5);
     guideLayout->addLayout(toolbarLayout);
-    guideLayout->addWidget(m_pointCloudView);
+    guideLayout->addWidget(m_pointCloudView);  // 点云视图占满整个标签页
     ui->tab_guide->setLayout(guideLayout);
+    
+    // === 在实时监控标签页中添加导航视频到地图导航组 ===
+    // 创建导航视频显示Label
+    QLabel *label_navigation = new QLabel(this);
+    label_navigation->setObjectName("label_navigation");
+    label_navigation->setAlignment(Qt::AlignCenter);
+    label_navigation->setScaledContents(false);
+    label_navigation->setAutoFillBackground(true);
+    label_navigation->setMinimumSize(300, 220); // 调整最小尺寸以适应地图导航区域
+    QPalette navPalette;
+    navPalette.setColor(QPalette::Window, Qt::black);
+    label_navigation->setPalette(navPalette);
+    label_navigation->setText("导航视频 (192.168.16.146:8084)");
+    
+    // 创建启动导航视频按钮
+    QPushButton *btnStartNavVideo = new QPushButton("启动导航视频", this);
+    btnStartNavVideo->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    
+    // 连接导航视频启动按钮
+    connect(btnStartNavVideo, &QPushButton::clicked, this, [this](){
+        ui->connect_status->append("开始连接导航视频TCP流: " + m_videoHost + ":" + QString::number(m_navigationPort));
+        connectNavigationStream();
+    });
+    
+    // 将导航视频添加到地图导航的按钮布局中（在保存巡检方案按钮之后）
+    QHBoxLayout *mapButtonLayout = qobject_cast<QHBoxLayout*>(ui->groupBox_3->layout()->itemAt(1)->layout());
+    if (mapButtonLayout) {
+        mapButtonLayout->addWidget(btnStartNavVideo);
+    }
+    
+    // 将导航视频Label添加到地图导航组的布局中（在mapGraphicsView下方）
+    QGridLayout *mapLayout = qobject_cast<QGridLayout*>(ui->groupBox_3->layout());
+    if (mapLayout) {
+        mapLayout->addWidget(label_navigation, 2, 0);  // 添加到第3行
+    }
     
     // 连接按钮信号
     connect(btnResetView, &QPushButton::clicked, this, &robot::onResetViewClicked);
@@ -355,9 +422,6 @@ robot::robot(QWidget *parent)
 
     // ===== 数据库连接测试 =====
     testDatabaseConnection();
-    
-    // ===== 自动加载拓扑地图 =====
-    initTopologyMap();
 
 }
 
@@ -366,11 +430,21 @@ robot::~robot()
     stopCameraStream();
     stopInfraredStream();
     
+    // 停止导航视频流
+    if (m_navigationWatchdog && m_navigationWatchdog->isActive()) {
+        m_navigationWatchdog->stop();
+    }
+    if (m_navigationTcpSocket && m_navigationTcpSocket->state() == QAbstractSocket::ConnectedState) {
+        m_navigationTcpSocket->disconnectFromHost();
+    }
+    
     // 清理FFmpeg解码器资源
     cleanupFFmpegDecoder(&m_videoCodecCtx, &m_videoFrame, &m_videoSwFrame, 
                         &m_videoSwsCtx, &m_videoPacket);
     cleanupFFmpegDecoder(&m_infraredCodecCtx, &m_infraredFrame, &m_infraredSwFrame, 
                         &m_infraredSwsCtx, &m_infraredPacket);
+    cleanupFFmpegDecoder(&m_navigationCodecCtx, &m_navigationFrame, &m_navigationSwFrame, 
+                        &m_navigationSwsCtx, &m_navigationPacket);
     
     // 清理TCP连接
     if (m_videoTcpSocket) {
@@ -380,6 +454,10 @@ robot::~robot()
     if (m_infraredTcpSocket) {
         m_infraredTcpSocket->disconnectFromHost();
         m_infraredTcpSocket->deleteLater();
+    }
+    if (m_navigationTcpSocket) {
+        m_navigationTcpSocket->disconnectFromHost();
+        m_navigationTcpSocket->deleteLater();
     }
     
     delete ui;
@@ -532,8 +610,8 @@ void robot::on_simulateDataButton_clicked()
     ui->connect_status->append(QString(">> 模拟ROS坐标: (%1, %2) - %3")
                                .arg(current.x).arg(current.y).arg(current.desc));
 
-    // 调用核心比对逻辑
-    checkAndLightUp(current.x, current.y);
+    // 已删除拓扑图点亮功能
+    // checkAndLightUp(current.x, current.y);
 
     index++;
 
@@ -1553,8 +1631,8 @@ void robot::onWebMessageReceived(const QString &message)
 
 //            // 移动标记到新的位置
 //            m_robotPositionMarker->setPos(scenePos);
-            // 这样即使机器人没发 reached_waypoint 信号，只要路过，灯也会亮
-            checkAndLightUp(m_latestRobotPos_World.x(), m_latestRobotPos_World.y());
+            // 已删除拓扑图点亮功能
+            // checkAndLightUp(m_latestRobotPos_World.x(), m_latestRobotPos_World.y());
 
             return; // 处理完毕
         }
@@ -1584,8 +1662,8 @@ void robot::onWebMessageReceived(const QString &message)
 
             qDebug() << "收到抵达坐标：" << x << y;
 
-            // 调用比对逻辑
-            checkAndLightUp(x, y);
+            // 已删除拓扑图点亮功能
+            // checkAndLightUp(x, y);
         }
         // --- [新增: 处理仪表读数话题] ---
         else if (topic == "/meter_reading")
@@ -1685,9 +1763,8 @@ void robot::on_loadMapButton_clicked()
 //        }
 
 //        loadPcdMap(filePath);
-    initTopologyMap();
-
-    ui->connect_status->append("已重置拓扑地图显示。");
+    // 已删除拓扑图加载功能
+    ui->connect_status->append("拓扑图功能已移除");
 }
 
 void robot::loadPcdMap(const QString &filePath)
@@ -2610,6 +2687,27 @@ void robot::checkInfraredTimeout()
     }
 }
 
+void robot::checkNavigationTimeout()
+{
+    // 检查距离最后一帧是否超过10秒
+    qint64 secondsSinceLastFrame = m_lastNavigationFrame.secsTo(QDateTime::currentDateTime());
+    
+    if (secondsSinceLastFrame > 10) {
+        qDebug() << "导航视频流超时!正在重连...";
+        ui->connect_status->append(QString("导航视频流超时(%1秒无新帧),正在重连...").arg(secondsSinceLastFrame));
+        
+        // 断开并重连TCP
+        if (m_navigationTcpSocket->state() == QAbstractSocket::ConnectedState) {
+            m_navigationTcpSocket->disconnectFromHost();
+        }
+        m_navigationBuffer.clear();
+        
+        // 重新连接
+        m_lastNavigationFrame = QDateTime::currentDateTime();
+        QTimer::singleShot(1000, this, &robot::connectNavigationStream);
+    }
+}
+
 // ==================== TCP视频流处理函数 ====================
 
 void robot::connectVideoStream()
@@ -2711,6 +2809,21 @@ void robot::connectInfraredStream()
     m_infraredTcpSocket->connectToHost(m_videoHost, m_infraredPort);
 }
 
+void robot::connectNavigationStream()
+{
+    if (m_navigationTcpSocket->state() == QAbstractSocket::ConnectedState ||
+        m_navigationTcpSocket->state() == QAbstractSocket::ConnectingState) {
+        qDebug() << "导航视频流已经在连接中,状态:" << m_navigationTcpSocket->state();
+        return;  // 已经连接或正在连接
+    }
+    
+    qDebug() << "===== 连接导航视频TCP流 =====";
+    qDebug() << "主机:" << m_videoHost;
+    qDebug() << "端口:" << m_navigationPort;
+    m_navigationBuffer.clear();
+    m_navigationTcpSocket->connectToHost(m_videoHost, m_navigationPort);
+}
+
 void robot::processInfraredData()
 {
     // 读取所有可用数据
@@ -2776,6 +2889,81 @@ void robot::processInfraredData()
         } else {
             // 没有找到起始标记,清空
             m_infraredBuffer.clear();
+        }
+    }
+}
+
+void robot::processNavigationData()
+{
+    // 读取所有可用数据
+    QByteArray newData = m_navigationTcpSocket->readAll();
+    m_navigationBuffer.append(newData);
+    
+    // 解析JPEG帧
+    while (true) {
+        // 查找JPEG起始标记 0xFF 0xD8
+        int startPos = m_navigationBuffer.indexOf("\xFF\xD8");
+        if (startPos == -1) {
+            // 没有找到起始标记,保留所有数据等待更多
+            break;
+        }
+        
+        // 查找JPEG结束标记 0xFF 0xD9
+        int endPos = m_navigationBuffer.indexOf("\xFF\xD9", startPos + 2);
+        if (endPos == -1) {
+            // 没有找到结束标记,说明帧不完整
+            // 如果缓冲区太大,丢弃起始标记之前的数据
+            if (startPos > 0) {
+                m_navigationBuffer.remove(0, startPos);
+            }
+            break;
+        }
+        
+        // 提取完整的JPEG数据(包括结束标记)
+        QByteArray jpegData = m_navigationBuffer.mid(startPos, endPos - startPos + 2);
+        
+        // 从缓冲区删除已处理的数据
+        m_navigationBuffer.remove(0, endPos + 2);
+        
+        // 使用FFmpeg解码图像
+        QImage image = decodeJpegWithFFmpeg(jpegData, m_navigationCodecCtx, m_navigationFrame, 
+                                           m_navigationSwFrame, &m_navigationSwsCtx, m_navigationHwAccelEnabled);
+        if (!image.isNull()) {
+            // 更新最后帧时间
+            m_lastNavigationFrame = QDateTime::currentDateTime();
+            
+            // 查找label_navigation控件并显示（现在在实时监控标签页中）
+            QLabel* label_navigation = this->findChild<QLabel*>("label_navigation");
+            if (label_navigation) {
+                // 转换为QPixmap并缩放显示
+                QPixmap pixmap = QPixmap::fromImage(image);
+                int w = label_navigation->width();
+                int h = label_navigation->height();
+                label_navigation->setPixmap(pixmap.scaled(w, h, 
+                                                          Qt::KeepAspectRatio, 
+                                                          Qt::SmoothTransformation));
+                label_navigation->update();
+                
+                qDebug() << "导航视频帧:" << image.size() << "字节:" << jpegData.size();
+            } else {
+                qDebug() << "警告:未找到label_navigation控件";
+            }
+        } else {
+            qDebug() << "导航视频JPEG解码失败,大小:" << jpegData.size();
+        }
+    }
+    
+    // 防止缓冲区积压 - 保持低延迟
+    if (m_navigationBuffer.size() > 200 * 1024) {  // 超过200KB
+        qDebug() << "导航视频缓冲区积压:" << m_navigationBuffer.size() << "bytes,清理中...";
+        // 查找最后一个起始标记
+        int lastStart = m_navigationBuffer.lastIndexOf("\xFF\xD8");
+        if (lastStart > 0) {
+            // 只保留最后一个未完成的帧
+            m_navigationBuffer = m_navigationBuffer.mid(lastStart);
+        } else {
+            // 没有找到起始标记,清空
+            m_navigationBuffer.clear();
         }
     }
 }
@@ -3956,126 +4144,5 @@ void robot::testDatabaseConnection()
     ui->connect_status->append("========================================");
 }
 
-void robot::initTopologyMap()
-{
-    // 1. 清理场景，防止重影
-        m_mapScene->clear();
+// 已删除 initTopologyMap() 和 checkAndLightUp() 函数实现
 
-        // 2. 加载拓扑图背景 - 使用绝对路径
-        QString imagePath = "C:/Users/shunshun/Desktop/image/502.png";
-        qDebug() << "尝试加载拓扑图:" << imagePath;
-        
-        // 检查文件是否存在
-        QFileInfo fileInfo(imagePath);
-        if (!fileInfo.exists()) {
-            qDebug() << "❌ 文件不存在:" << imagePath;
-            ui->connect_status->append("❌ 文件不存在: " + imagePath);
-            m_mapScene->addRect(0, 0, 1038, 466, QPen(Qt::red), QBrush(Qt::white));
-            m_mapScene->addText("文件不存在，请检查路径")->setDefaultTextColor(Qt::red);
-            ui->mapGraphicsView->fitInView(m_mapScene->sceneRect(), Qt::KeepAspectRatio);
-            return;
-        }
-        
-        qDebug() << "文件存在，大小:" << fileInfo.size() << "字节";
-        
-        QPixmap bgImage(imagePath);
-
-        if (bgImage.isNull()) {
-            qDebug() << "❌ 错误：无法加载图片（可能格式不支持或文件损坏）";
-            ui->connect_status->append("❌ 错误：无法加载图片，请检查文件格式");
-            // 如果图片加载失败，绘制一个红色的矩形框作为占位符，避免程序崩溃
-            m_mapScene->addRect(0, 0, 1038, 466, QPen(Qt::red), QBrush(Qt::white));
-            m_mapScene->addText("图片加载失败，请检查文件格式")->setDefaultTextColor(Qt::red);
-        } else {
-            qDebug() << "✅ 图片加载成功，尺寸:" << bgImage.width() << "x" << bgImage.height();
-            m_mapScene->addPixmap(bgImage);
-            
-            // 设置场景范围比图片大很多，提供更大的拖动空间
-            QRectF imageRect = bgImage.rect();
-            qreal margin = 300; // 300像素边距，提供更大的拖动范围
-            m_mapScene->setSceneRect(imageRect.adjusted(-margin, -margin, margin, margin));
-            
-            qDebug() << "场景范围已设置:" << m_mapScene->sceneRect();
-            ui->connect_status->append(QString("✅ 拓扑图加载成功 (%1x%2)").arg(bgImage.width()).arg(bgImage.height()));
-            
-            // 启用滚动条
-            ui->mapGraphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-            ui->mapGraphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-            
-            // 不自动缩放以适应视图，保持图片原始大小
-            ui->mapGraphicsView->resetTransform();
-            
-            // 居中显示图片
-            ui->mapGraphicsView->centerOn(imageRect.center());
-        }
-        
-        ui->mapGraphicsView->show();
-
-        // 3. 【关键】填入你刚刚量好的精准坐标 (ID -> 像素X, 像素Y)
-        m_topoPixelMap.clear();
-
-        // 根据你提供的测量数据：
-        m_topoPixelMap.insert(0, QPointF(525, 88));  // 巡检点1 (中上) - 对应 JSON order 0
-        m_topoPixelMap.insert(1, QPointF(150, 88));  // 巡检点2 (左上) - 对应 JSON order 1
-        m_topoPixelMap.insert(2, QPointF(150, 378)); // 巡检点3 (左下) - 对应 JSON order 2
-        m_topoPixelMap.insert(3, QPointF(888, 378)); // 巡检点4 (右下) - 对应 JSON order 3
-        m_topoPixelMap.insert(4, QPointF(888, 88));  // 巡检点5 (右上) - 对应 JSON order 4
-
-        // 4. 创建显示的绿点
-        // 直径40像素，醒目一点
-        m_fakeGreenDot = m_mapScene->addEllipse(0, 0, 40, 40,
-                                                QPen(Qt::black, 2),
-                                                QBrush(Qt::green));
-
-        // 设置变换原点为圆心 (半径20)，这样设置坐标时圆心会准确对齐你的测量点
-        m_fakeGreenDot->setTransformOriginPoint(20, 20);
-
-        // 确保绿点在图的最上层
-        m_fakeGreenDot->setZValue(100);
-
-        // 默认隐藏，只有匹配到坐标时才显示
-        m_fakeGreenDot->setVisible(false);
-}
-
-void robot::checkAndLightUp(double receivedX, double receivedY)
-{
-    // 设定一个容差范围 (比如 0.3 米)
-    // 机器人实际到达的位置和 JSON 里的计划位置可能会有一点误差
-    double tolerance = 0.3;
-    int matchedId = -1;
-
-    // 1. 遍历我们刚才加载的所有点，找找最近的是哪个
-    for (const InspectionTarget &target : m_currentPlanTargets) {
-        double dx = receivedX - target.realX;
-        double dy = receivedY - target.realY;
-        double distance = std::sqrt(dx*dx + dy*dy);
-
-        if (distance < tolerance) {
-            matchedId = target.id; // 找到了对应的 order ID
-            break;
-        }
-    }
-
-    // 2. 根据结果控制绿点
-    if (matchedId != -1 && m_topoPixelMap.contains(matchedId)) {
-        // === 匹配成功！===
-
-        // 查表找到图片上的像素位置
-        QPointF pixelPos = m_topoPixelMap[matchedId];
-
-        // 瞬移过去 (减去半径的一半 10，让圆心对齐)
-        m_fakeGreenDot->setPos(pixelPos.x() - 10, pixelPos.y() - 10);
-
-        // 亮灯
-        m_fakeGreenDot->setVisible(true);
-
-        ui->connect_status->append(QString("抵达站点 (Order %1)，显示更新。").arg(matchedId));
-
-    } else {
-        // === 没匹配到 (或者在两个点中间) ===
-        // 按照你的要求：如果不亮最好根本就不显示
-        m_fakeGreenDot->setVisible(false);
-        qDebug() << "当前坐标未匹配到已知站点，绿点隐藏。";
-    }
-
-}

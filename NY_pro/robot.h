@@ -149,6 +149,7 @@ private slots:
     // TCP视频流相关槽函数 - 旧的HTTP函数已移除
     void checkVideoTimeout();         // 检查视频流超时
     void checkInfraredTimeout();      // 检查红外流超时
+    void checkNavigationTimeout();    // 检查导航视频流超时
 
     void on_btn_SavePlan_clicked();
 
@@ -316,31 +317,42 @@ private:
     // TCP图像获取相关成员 - 替代HTTP方式
     QTcpSocket* m_videoTcpSocket;        // 视频TCP连接
     QTcpSocket* m_infraredTcpSocket;     // 红外TCP连接
+    QTcpSocket* m_navigationTcpSocket;   // 导航视频TCP连接(第三路)
     QString m_videoHost;                 // Jetson IP地址
     quint16 m_videoPort;                 // 视频端口(9001)
     quint16 m_infraredPort;              // 红外端口(9002)
+    quint16 m_navigationPort;            // 导航视频端口(8084)
     
     // JPEG流处理相关
     QByteArray m_videoBuffer;            // 视频数据缓冲
     QByteArray m_infraredBuffer;         // 红外数据缓冲
+    QByteArray m_navigationBuffer;       // 导航视频数据缓冲
     QTimer* m_videoWatchdog;             // 视频流看门狗定时器
     QTimer* m_infraredWatchdog;          // 红外流看门狗定时器
+    QTimer* m_navigationWatchdog;        // 导航视频流看门狗定时器
     QDateTime m_lastVideoFrame;          // 最后一帧视频时间
     QDateTime m_lastInfraredFrame;       // 最后一帧红外时间
+    QDateTime m_lastNavigationFrame;     // 最后一帧导航视频时间
     
     // FFmpeg硬件解码相关成员
     struct AVCodecContext* m_videoCodecCtx;      // 视频解码器上下文
     struct AVCodecContext* m_infraredCodecCtx;   // 红外解码器上下文
+    struct AVCodecContext* m_navigationCodecCtx; // 导航视频解码器上下文
     struct AVFrame* m_videoFrame;                // 视频解码帧
     struct AVFrame* m_infraredFrame;             // 红外解码帧
+    struct AVFrame* m_navigationFrame;           // 导航视频解码帧
     struct AVFrame* m_videoSwFrame;              // 视频软件帧(硬件解码后传输到CPU)
     struct AVFrame* m_infraredSwFrame;           // 红外软件帧
+    struct AVFrame* m_navigationSwFrame;         // 导航视频软件帧
     struct SwsContext* m_videoSwsCtx;            // 视频像素格式转换上下文
     struct SwsContext* m_infraredSwsCtx;         // 红外像素格式转换上下文
+    struct SwsContext* m_navigationSwsCtx;       // 导航视频像素格式转换上下文
     struct AVPacket* m_videoPacket;              // 视频数据包
     struct AVPacket* m_infraredPacket;           // 红外数据包
+    struct AVPacket* m_navigationPacket;         // 导航视频数据包
     bool m_videoHwAccelEnabled;                  // 视频硬件加速是否启用
     bool m_infraredHwAccelEnabled;               // 红外硬件加速是否启用
+    bool m_navigationHwAccelEnabled;             // 导航视频硬件加速是否启用
     
     // FFmpeg初始化函数
     bool initFFmpegDecoder(AVCodecContext** codecCtx, AVFrame** frame, AVFrame** swFrame, 
@@ -354,8 +366,10 @@ private:
     // TCP流处理函数
     void processVideoData();             // 处理视频TCP数据
     void processInfraredData();          // 处理红外TCP数据
+    void processNavigationData();        // 处理导航视频TCP数据
     void connectVideoStream();           // 连接视频TCP流
     void connectInfraredStream();        // 连接红外TCP流
+    void connectNavigationStream();      // 连接导航视频TCP流
     
     // 点云数据处理
     void subscribeToPointClouds();       // 订阅点云话题
@@ -377,17 +391,5 @@ private:
 
     // A. 存储方案中所有点的真实坐标 (从JSON加载进这里)
     QList<InspectionTarget> m_currentPlanTargets;
-
-    // B. 存储 "点ID" -> "拓扑图像素坐标" 的映射 (写死或配置)
-    QMap<int, QPointF> m_topoPixelMap;
-
-    // C. 那个绿点 (显示在 m_mapScene 上)
-    QGraphicsEllipseItem* m_fakeGreenDot;
-
-    // D. 初始化拓扑图和像素映射
-    void initTopologyMap();
-
-    // E. 核心逻辑：传入当前收到的坐标，判断是否点亮
-    void checkAndLightUp(double receivedX, double receivedY);
 };
 #endif // ROBOT_H
